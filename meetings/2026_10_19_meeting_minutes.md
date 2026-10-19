@@ -1,4 +1,4 @@
-Goal: go over each person's work on the SRS, get group feedback, finalize document
+Goal: assign each person some design work for the next 1.5 weeks
 
 Attendees:
 - (K) Kris Vuong
