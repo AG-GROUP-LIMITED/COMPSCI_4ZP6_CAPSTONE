@@ -1,7 +1,10 @@
 # How to run in your environment
 1. Ensure you have node & npm installed
 2. Navigate to `/react-ts-vite-app` folder and run `npm install`
-2. Run `npm run dev`
+3. In one terminal, run `python3 backend/server.py`
+4. In another terminal, run `npm run dev`
+
+The Python API stores created projects in `backend/projects.db`.
 
 # React + TypeScript + Vite
 
