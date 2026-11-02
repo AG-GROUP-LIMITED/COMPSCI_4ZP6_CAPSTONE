@@ -1,4 +1,5 @@
 # How to run in your environment
+
 1. Ensure you have node & npm installed
 2. Navigate to `/react-ts-vite-app` folder and run `npm install`
 3. In one terminal, run `python3 backend/server.py`
