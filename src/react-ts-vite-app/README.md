@@ -1,41 +1,28 @@
-# How to run in your environment
+# Running Website
 
-1. Ensure you have node & npm installed
-2. Navigate to `/react-ts-vite-app` folder and run `npm install`
-3. In one terminal, run `python3 backend/server.py`
-4. In another terminal, run `npm run dev`
+1. Install Node.js and npm with `apt` or another package manager:
 
-The Python API stores created projects in `backend/projects.db`.
+   ```sh
+   sudo apt update
+   sudo apt install -y nodejs npm
+   ```
 
-# React + TypeScript + Vite
+2. Navigate to react source folder and build:
+   ```sh
+   cd /src/react-ts-vite-app
+   npm install
+   npm run build
+   ```
+3. Give permission to script:
+   ```sh
+   chmod +x run-website.sh
+   ```
+4. Run script:
+   ```sh
+   run-website.sh
+   ```
+5. Website is now accessible at `127.0.0.1:8000` and API is open at `127.0.0.1:3000`
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+# Accessing Database
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
-
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+The Python API stores created projects in `/src/backend/projects.db`.
