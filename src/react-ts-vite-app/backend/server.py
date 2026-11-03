@@ -11,7 +11,7 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 DATABASE = Path(__file__).with_name("projects.db")
-DEMO_OWNER_EMAIL = "demo.owner@local.invalid"
+DEMO_OWNER_EMAIL = "test@test.mcmaster"
 
 SCHEMA = (
     'CREATE TABLE IF NOT EXISTS "User" ('
@@ -78,52 +78,14 @@ def initialize_database():
         for statement in SCHEMA:
             connection.execute(statement)
 
-        salt = secrets.token_bytes(16)
-        password_hash = hashlib.pbkdf2_hmac(
-            "sha256", secrets.token_bytes(32), salt, 600_000
-        )
-        stored_hash = f"pbkdf2_sha256$600000${salt.hex()}${password_hash.hex()}"
         connection.execute(
             'INSERT OR IGNORE INTO "User" (Name, Email, PasswordHash) '
             "VALUES (?, ?, ?)",
-            ("Local Demo Owner", DEMO_OWNER_EMAIL, stored_hash),
+            ("Local Demo Owner", DEMO_OWNER_EMAIL, "test hash"),
         )
         owner_id = connection.execute(
             'SELECT UserID FROM "User" WHERE Email = ?', (DEMO_OWNER_EMAIL,)
         ).fetchone()[0]
-
-        legacy_table = connection.execute(
-            "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'projects'"
-        ).fetchone()
-        if legacy_table:
-            columns = {
-                row[1] for row in connection.execute('PRAGMA table_info("projects")')
-            }
-            if not {"id", "name"}.issubset(columns):
-                raise sqlite3.DatabaseError(
-                    'Cannot migrate legacy "projects" table: expected id and name columns'
-                )
-
-            old_projects = connection.execute(
-                'SELECT id, name FROM "projects" ORDER BY id'
-            ).fetchall()
-            for project_id, name in old_projects:
-                connection.execute(
-                    'INSERT INTO "Project" '
-                    "(ProjectID, OwnerID, Description) VALUES (?, ?, ?)",
-                    (project_id, owner_id, name),
-                )
-                project_owner_id = connection.execute(
-                    'SELECT OwnerID FROM "Project" WHERE ProjectID = ?',
-                    (project_id,),
-                ).fetchone()[0]
-                connection.execute(
-                    'INSERT OR IGNORE INTO "Collaborators" (ProjectID, UserID) '
-                    "VALUES (?, ?)",
-                    (project_id, project_owner_id),
-                )
-            connection.execute('DROP TABLE "projects"')
-
 
 class ProjectRequestHandler(BaseHTTPRequestHandler):
     def send_json(self, status_code, data):

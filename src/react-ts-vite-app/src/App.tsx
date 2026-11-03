@@ -21,6 +21,7 @@ type ProjectNode = {
 };
 
 function App() {
+  // Sets default variables
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState("");
   const [nodes, setNodes] = useState<ProjectNode[]>([]);
@@ -197,7 +198,7 @@ function App() {
             type="button"
             onClick={createProject}
             disabled={isLoading || isCreating}
-            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50"
           >
             {isCreating ? "Creating..." : "Create project"}
           </button>
@@ -283,7 +284,7 @@ function App() {
             <button
               type="submit"
               disabled={!selectedProjectId || isAddingNode || isLoadingNodes}
-              className="w-fit rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50"
             >
               {isAddingNode ? "Adding node..." : "Add node"}
             </button>
