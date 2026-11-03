@@ -27,4 +27,4 @@
 
 ## Accessing Database
 
-The Python API stores created projects in `/src/backend/projects.db`.
+The Python API stores created projects in `/src/react-ts-vite-app/backend/projects.db`.
