@@ -37,6 +37,7 @@ function App() {
   const [parentId, setParentId] = useState("");
   const [error, setError] = useState<string | null>(null);
 
+  // Function Code
   useEffect(() => {
     const loadProjects = async () => {
       try {
@@ -159,7 +160,7 @@ function App() {
       setIsAddingNode(false);
     }
   };
-
+  // HTML Code for Website
   return (
     <>
       <nav className="flex border-b justify-between sticky top-0 px-3 h-1/25">
