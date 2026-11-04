@@ -1,3 +1,5 @@
+# Every wednesday at 9am, this runs the `generate_meeding_file.sh` script to generate the blank meeting minutes.
+
 name: Create Blank Weekly Meeting Minutes
 
 on:
