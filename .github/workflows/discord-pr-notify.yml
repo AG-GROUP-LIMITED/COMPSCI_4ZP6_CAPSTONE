@@ -6,6 +6,8 @@ on:
     types: [opened, reopened]
     branches:
       - main
+    paths:
+      - 'src/**'
 
 jobs:
   discord_notification:
