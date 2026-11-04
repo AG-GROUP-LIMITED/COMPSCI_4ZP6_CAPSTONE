@@ -1,3 +1,4 @@
+
 name: Weekly Meeting Minutes
 
 on:
@@ -18,7 +19,8 @@ jobs:
           ref: main
 
       - name: Generate meeting minutes file
-        run: bash meetings/generate_meeding_file.sh
+        working-directory: meetings
+        run: bash generate_meeding_file.sh
 
       - name: Commit generated file
         run: |
