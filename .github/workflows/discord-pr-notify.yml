@@ -1,3 +1,4 @@
+
 name: PR Notification to Discord
 
 on:
@@ -10,16 +11,30 @@ jobs:
   discord_notification:
     runs-on: ubuntu-latest
     steps:
-      - name: Send PR Status to Discord
-        uses: appleboy/discord-action@master
-        with:
-          webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
-          webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
-          username: "GitHub PR Bot"
-          avatar_url: "https://githubassets.com"
-          color: "#48f442"
-          args: '{"allowed_mentions": {"parse": ["everyone"]}}'
-          message: |
-            @everyone Please review **${{ github.event.pull_request.user.login }}**'s PR to **${{ github.event.pull_request.base.ref }}**: 
-            **Title**: "${{ github.event.pull_request.title }}"
-            **URL**: ${{ github.event.pull_request.html_url }}
+      - name: Send PR Notification to Discord
+        env:
+          WEBHOOK_ID: ${{ secrets.DISCORD_WEBHOOK_ID }}
+          WEBHOOK_TOKEN: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+
+        run: |
+          payload=$(jq -n \
+            --arg content "@everyone Please review **${PR_AUTHOR}**'s PR to **${BASE_BRANCH}**:
+          **Title**: \"${PR_TITLE}\"
+          **URL**: ${PR_URL}" \
+            --arg username "GitHub PR Bot" \
+            '{
+              username: $username,
+              content: $content,
+              allowed_mentions: {
+                parse: ["everyone"]
+              }
+            }')
+
+          curl --fail-with-body --silent --show-error \
+            -H "Content-Type: application/json" \
+            -d "$payload" \
+            "https://discord.com/api/webhooks/${WEBHOOK_ID}/${WEBHOOK_TOKEN}?wait=true"
