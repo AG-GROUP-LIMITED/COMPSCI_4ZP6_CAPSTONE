@@ -20,7 +20,7 @@ export function MainLayout({children}: LayoutProps) {
                 <SideBar>
                     <></>
                 </SideBar>
-                <div className="p-2">
+                <div className="flex-1 min-w-0 min-h-0 p-2">
                     {children}
                 </div>
             </div>

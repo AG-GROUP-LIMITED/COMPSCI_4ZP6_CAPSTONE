@@ -2,13 +2,14 @@
 import './App.css'
 import './index.css'
 import { MainLayout } from './components/MainLayout.tsx'
+import TaskGraph from './components/Graph/TaskGraph.tsx'
 
 function App() {
 
   return (
     <>
       <MainLayout>
-        <span>Main content</span>
+        <TaskGraph />
       </MainLayout>
     </>
   )
