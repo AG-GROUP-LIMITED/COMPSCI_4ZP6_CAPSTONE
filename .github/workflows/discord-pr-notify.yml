@@ -1,3 +1,5 @@
+# Upon a PR being opened on the main branch, with files in src/** being edited, 
+# this workflow will send a notification to the discord pr-review channel.
 
 name: PR Notification to Discord
 
