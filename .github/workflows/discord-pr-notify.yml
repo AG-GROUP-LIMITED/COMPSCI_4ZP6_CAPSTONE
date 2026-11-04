@@ -10,7 +10,7 @@ jobs:
   discord_notification:
     runs-on: ubuntu-latest
     steps:
-      - name: Send open PR to Discord
+      - name: Send PR Status to Discord
         uses: appleboy/discord-action@master
         with:
           webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
@@ -19,8 +19,6 @@ jobs:
           avatar_url: "https://githubassets.com"
           color: "#48f442"
           message: |
-            **Pull Request Event:** ${{ github.event.action }}
-            **Title:** ${{ github.event.pull_request.title }}
-            **Target Branch:** ${{ github.event.pull_request.base.ref }}
-            **Author:** ${{ github.event.pull_request.user.login }}
-            **URL:** ${{ github.event.pull_request.html_url }}
+            @everyone Please review **${{ github.event.pull_request.user.login }}**'s PR to **${{ github.event.pull_request.base.ref }}**: 
+            **Title**: "${{ github.event.pull_request.title }}"
+            **URL**: ${{ github.event.pull_request.html_url }}
