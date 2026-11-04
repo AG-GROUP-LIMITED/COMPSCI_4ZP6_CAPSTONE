@@ -18,6 +18,7 @@ jobs:
           username: "GitHub PR Bot"
           avatar_url: "https://githubassets.com"
           color: "#48f442"
+          args: '{"allowed_mentions": {"parse": ["everyone"]}}'
           message: |
             @everyone Please review **${{ github.event.pull_request.user.login }}**'s PR to **${{ github.event.pull_request.base.ref }}**: 
             **Title**: "${{ github.event.pull_request.title }}"
