@@ -6,6 +6,8 @@ Attendees:
 - Gray Niederhuber
 - Eunsu Kim
 
+khaksjdhakshdkjsahdkjas
+
 # Notes:
 ## Updates
 - starts with tasks
