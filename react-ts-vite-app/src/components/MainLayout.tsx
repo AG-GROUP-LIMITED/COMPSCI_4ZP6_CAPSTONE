@@ -24,7 +24,7 @@ export function MainLayout({children, view, setView}: LayoutProps) {
                     <SideMenu icon={view ? List : Network} onclick={() => {setView((curr) => (!curr))}}>{view ? "List View" : "Graph View"}</SideMenu>
                     <SideMenu icon={Files} label="Documents" />
                 </SideBar>
-                <div className="p-2">
+                <div className="flex-1 min-w-0 min-h-0 p-2">
                     {children}
                 </div>
             </div>
