@@ -1,7 +1,5 @@
 import React, { useContext, createContext, useState, useEffect, useRef, useCallback } from 'react'
 import { ChevronFirst, ChevronLast, Network, Files, type LucideIcon } from "lucide-react"
-// import SideButton from './SideButton'
-// import SideMenu from './SideMenu'
 
 interface SidebarContextType {
     expanded: boolean;
@@ -21,6 +19,12 @@ interface SideButtonProps {
     icon?: LucideIcon;
     onclick?: React.MouseEventHandler
     children: React.ReactNode;
+}
+
+interface SideSwitchProps {
+    icon: LucideIcon;
+    label: string;
+    onclick?: React.MouseEventHandler
 }
 
 export function SideBar({children}: SideBarProps) {
@@ -114,15 +118,6 @@ export function SideMenu({icon: Icon, label}: SideMenuProps) {
     const {expanded} = useContext(SidebarContext)
     const [isOpened, setIsOpened] = useState(false)
 
-    // useEffect(() =>{
-    //     if (!opened) {
-    //         setIsOpened(true);
-    //     }
-    //     else {
-    //         setIsOpened(false);
-    //     }
-    // }, [opened]);
-
     return (
         <li>
             <button className={`flex p-2 w-full h-10 rounded-md transition-all hover:bg-gray-100 gap-2 items-center ${expanded? "justify-start" : "justify-center"}`} onClick={() => setIsOpened((curr) => !curr)}>
@@ -130,6 +125,19 @@ export function SideMenu({icon: Icon, label}: SideMenuProps) {
                 <span className={`transition-all ${expanded? "" : "hidden"}`}>{label}</span>
             </button>
             <OpenSideMenu active={isOpened} />
+        </li>
+    )
+}
+
+export function SideSwitch({icon: Icon, label, onclick}: SideSwitchProps) {
+    const {expanded} = useContext(SidebarContext)
+    
+    return (
+        <li>
+            <button className={`flex p-2 w-full h-10 rounded-md transition-all hover:bg-gray-100 gap-2 items-center ${expanded? "justify-start" : "justify-center"}`} onClick={onclick}>
+                <Icon />
+                <span className={`transition-all ${expanded? "" : "hidden"}`}>{label}</span>
+            </button>
         </li>
     )
 }

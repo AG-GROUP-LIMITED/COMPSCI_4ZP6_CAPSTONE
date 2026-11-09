@@ -1,17 +1,20 @@
 import { useState } from 'react'
 import './App.css'
 import './index.css'
+import { ProjectLayout } from './components/ProjectLayout.tsx'
 import { MainLayout } from './components/MainLayout.tsx'
-import TaskGraph from './components/Graph/TaskGraph.tsx'
+import { BrowserRouter, Routes, Route } from 'react-router'
 
 function App() {
-  const [view, setView] = useState<boolean>(true)
-
   return (
     <>
-      <MainLayout>
-        <TaskGraph />
-      </MainLayout>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<MainLayout />}>
+          <Route path="project" element={<ProjectLayout />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
     </>
   )
 }
