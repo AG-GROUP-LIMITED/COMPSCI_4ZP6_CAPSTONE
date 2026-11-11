@@ -1,0 +1,41 @@
+Attendees:
+- Kris Vuong
+- Hudson Sheng
+- Oliver Li
+- James Jeon
+- Gray Niederhuber
+- Eunsu Kim
+
+Notes:
+- Updates:
+  - Frontend:
+    - cleaned up folder structure, add more frontend functionality,
+    - added node position persist
+  - Server setup:
+    - can't ssh into server, admin setup issues
+    - explained auth token
+- TODOs:
+  - TODO (data): Consolidate NodePosition into Node table + update PK
+    - kris: dbdiagram
+    - hudson: update sqlite table defnition (PK of Node table = (ProjectID, NodeID))
+  - TODO (backend/data): have node ID start from 1 for each project ID
+    - hudson
+    - maybe look into sql counter
+  - TODO (backend): implement or update endpoints (GET and PUT)
+    - hudson
+  - TODO: add title uniqueness check (form validation)
+    - gray (maybe)
+  - TODO (cleanup): clean up stale branches
+    - kris merge to gray
+    - gray merge to main
+    - oliver branch off main
+    - james clean up stale branch
+  - TODO: look into undo/redo stack
+    - james and eunsu
+  - TODO: get team members ssh access to cas server (agl.cas.mcmaster.ca)
+    - oliver
+  - TODO: begin LLM poc
+    - kris
+  - TODO (frontend): continue frontend work
+  - TODO: set up FastAPI for running backend
+    - oliver
