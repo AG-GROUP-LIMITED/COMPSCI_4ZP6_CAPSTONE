@@ -15,6 +15,9 @@ Notes:
     - can't ssh into server, admin setup issues
     - explained auth token
 - TODOs:
+  - TODO (data): add title to Project table
+    - kris: dbdiagram
+    - hudson: sqlite
   - TODO (data): Consolidate NodePosition into Node table + update PK
     - kris: dbdiagram
     - hudson: update sqlite table defnition (PK of Node table = (ProjectID, NodeID))
@@ -25,7 +28,7 @@ Notes:
     - hudson
   - TODO: add title uniqueness check (form validation)
     - gray (maybe)
-  - TODO (cleanup): clean up stale branches
+  - TODO: integrate branches
     - kris merge to gray
     - gray merge to main
     - oliver branch off main
@@ -41,5 +44,6 @@ Notes:
     - search bar
     - create item menu
     - detail pop-up
+    - projects preview
   - TODO: set up FastAPI for running backend
     - oliver
