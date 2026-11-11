@@ -11,7 +11,7 @@
 
 2. Navigate to react source folder and build:
    ```sh
-   cd /src/react-ts-vite-app
+   cd /src
    npm install
    npm run build
    ```
