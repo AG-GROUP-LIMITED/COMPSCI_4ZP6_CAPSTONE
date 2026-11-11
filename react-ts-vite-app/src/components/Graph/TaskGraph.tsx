@@ -58,6 +58,23 @@ const statusColors: Record<TaskStatus, string> = {
   'Not Started': '#94a3b8',
 };
 
+
+///////////////////////////////////////////////////////////////
+// Functions to load/persist graph layout
+const getGraphLayout = 
+  async (projectId: number): Promise<GraphLayout | null> => {
+    // TODO: GET /api/projects/{projectId}/graph/layout
+    return null;
+  }
+
+const saveGraphLayout = 
+  async (projectId: number, layout: GraphLayout): Promise<void> => {
+    // TODO: PUT /api/projects/{projectId}/graph/layout
+    console.log("Saving graph layout: ", projectId, layout)
+  }
+///////////////////////////////////////////////////////////////
+
+
 const positions: Record<number, { x: number; y: number }> = {
   101: { x: 0, y: 150 },
   102: { x: 300, y: 0 },
