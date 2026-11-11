@@ -1,6 +1,10 @@
 import { type FormEvent, useEffect, useState } from "react";
+import { BrowserRouter, Routes, Route } from 'react-router'
 import "./App.css";
 import "./index.css";
+import { ProjectLayout } from './components/ProjectLayout.tsx'
+import { MainLayout } from './components/MainLayout.tsx'
+import { HomeLayout } from './components/HomeLayout.tsx'
 
 type Project = {
   id: number;
@@ -163,7 +167,21 @@ function App() {
   // HTML Code for Website
   return (
     <>
-      <nav className="flex border-b justify-between sticky top-0 px-3 h-1/25">
+      <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<MainLayout />}>
+          <Route path="home" element={<HomeLayout />} />
+          <Route path="projects/:id" element={<ProjectLayout />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+    </>
+  );
+}
+
+export default App;
+
+{/* <nav className="flex border-b justify-between sticky top-0 px-3 h-1/25">
         <div>GRID</div>
         <div>Profile</div>
       </nav>
@@ -319,9 +337,4 @@ function App() {
             </ul>
           )}
         </div>
-      </section>
-    </>
-  );
-}
-
-export default App;
+      </section> */}

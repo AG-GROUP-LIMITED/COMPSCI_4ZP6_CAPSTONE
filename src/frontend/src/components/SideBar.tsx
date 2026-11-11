@@ -1,13 +1,17 @@
 import React, { useContext, createContext, useState, useEffect, useRef, useCallback } from 'react'
 import { ChevronFirst, ChevronLast, Network, Files, type LucideIcon } from "lucide-react"
+import { DropDown } from "./DropDown.tsx"
+import { useNavigate } from 'react-router';
 
 interface SidebarContextType {
     expanded: boolean;
 }
 
 const SidebarContext = createContext<SidebarContextType>({expanded: true});
+
 interface SideBarProps {
-    children: React.ReactNode;
+    sidebarItems: React.ReactNode;
+    dropDownItems: React.ReactNode[];
 }
 
 interface SideMenuProps {
@@ -27,11 +31,12 @@ interface SideSwitchProps {
     onclick?: React.MouseEventHandler
 }
 
-export function SideBar({children}: SideBarProps) {
+export function SideBar({sidebarItems, dropDownItems}: SideBarProps) {
     const [expanded, setExpanded] = useState(true)
     const [minWidth, maxWidth, defaultWidth] = [150, 600, 250];
     const [width, setWidth] = useState(defaultWidth)
     const isResized = useRef(false);
+    const navigate=useNavigate();
 
     //Sidebar drag to resize
     useEffect(() => {
@@ -54,6 +59,8 @@ export function SideBar({children}: SideBarProps) {
             isResized.current = false;
         })
     }, []);
+
+    console.log("length: " + dropDownItems.length)
     
     return (
         <>
@@ -65,16 +72,15 @@ export function SideBar({children}: SideBarProps) {
             </div>
             <div className="flex-1 p-2 justify-between">
                 <SidebarContext.Provider value={{expanded}}>
-                    <ul>{children}</ul>
+                    <ul>{sidebarItems}</ul>
                 </SidebarContext.Provider>
                 
             </div>
-            <div className="p-2 border-t border-t-gray-300">
-                <SideButton>
-                    {expanded ? "Create New" : "+"}
-                </SideButton>
+            <div className="relative p-2 border-t border-t-gray-300">
+                <DropDown>
+                    {dropDownItems}
+                </DropDown>
             </div>
-            {/* {children} */}
         </aside>
 
         {/* Sidebar resize handle */}

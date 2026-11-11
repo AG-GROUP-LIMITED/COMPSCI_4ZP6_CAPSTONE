@@ -1,8 +1,8 @@
 #!/bin/bash
 
-npm run dev &
+cd frontend ; npm run dev &
 npm_pid=$!
-python3 backend/server.py &
+python3 ../backend/server.py &
 backend_pid=$!
 
 cleanup() {
