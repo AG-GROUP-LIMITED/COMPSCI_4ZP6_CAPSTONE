@@ -31,6 +31,16 @@ interface Task {
   ownerId: number;
 }
 
+interface NodePosition {
+  taskId: number;
+  x: number;
+  y: number;
+}
+
+interface GraphLayout {
+  positions: NodePosition[];
+}
+
 const tasks: Task[] = [
   { id: 101, parentId: null, title: 'Project Setup', description: 'Set up the initial project structure and repository.', dueDate: '2026-11-04', type: 'Task', status: 'Finished', ownerId: 101 },
   { id: 102, parentId: 101, title: 'Design Database', description: 'Create the initial database schema.', dueDate: '2026-11-07', type: 'Task', status: 'In Progress', ownerId: 102 },
