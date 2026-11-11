@@ -1,5 +1,5 @@
 
-import { useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   ReactFlow,
   Background,
@@ -63,32 +63,46 @@ const statusColors: Record<TaskStatus, string> = {
 // Functions to load/persist graph layout
 const getGraphLayout = 
   async (projectId: number): Promise<GraphLayout | null> => {
-    // TODO: GET /api/projects/{projectId}/graph/layout
-    return null;
+    console.log("Getting graph layout for project ID ", projectId)
+    // TODO: implement GET /api/projects/{projectId}/graph/layout
+    // TODO: replace below mock function with api response
+    return mockGetGraphLayout(TEMP_HARDCODED_PROJECT_ID);
   }
 
 const saveGraphLayout = 
   async (projectId: number, layout: GraphLayout): Promise<void> => {
-    // TODO: PUT /api/projects/{projectId}/graph/layout
     console.log("Saving graph layout: ", projectId, layout)
+    // TODO: implement PUT /api/projects/{projectId}/graph/layout
   }
+
+// Mock api call
+const TEMP_HARDCODED_PROJECT_ID = 1;
+
+// TODO: delete this function once this endpoint is implemented: GET /api/projects/{projectId}/graph/layout
+const mockGetGraphLayout = async (projectId: number) => {
+  console.log("mock GET graph layout for project ID: ", projectId)
+  // add delay to mock load time
+  await new Promise((resolve) => setTimeout(resolve, 500));
+  // return node positions for that project ID
+  return {
+    positions: [
+      { taskId: 101, x: 100, y: 150 },
+      { taskId: 102, x: 400, y: 50 },
+      { taskId: 103, x: 400, y: 350 },
+      { taskId: 104, x: 700, y: 50 },
+      { taskId: 105, x: 700, y: 350 },
+      { taskId: 106, x: 1000, y: 50 },
+      { taskId: 107, x: 100, y: 550 },
+      { taskId: 108, x: 100, y: 700 },
+    ]
+  }
+}
 ///////////////////////////////////////////////////////////////
 
 
-const positions: Record<number, { x: number; y: number }> = {
-  101: { x: 0, y: 150 },
-  102: { x: 300, y: 0 },
-  103: { x: 300, y: 300 },
-  104: { x: 600, y: 0 },
-  105: { x: 600, y: 300 },
-  106: { x: 900, y: 0 },
-  107: { x: 0, y: 450 },
-  108: { x: 0, y: 600 },
-};
-
 const initialNodes: Node[] = tasks.map((task) => ({
   id: String(task.id),
-  position: positions[task.id],
+  position: { x: 0, y: 0},  // fallback
   sourcePosition: Position.Right,
   targetPosition: Position.Left,
   data: {
@@ -127,8 +141,47 @@ const initialEdges: Edge[] = tasks
   }));
 
 export default function TaskGraph() {
-  const [nodes, , onNodesChange] = useNodesState(initialNodes);
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load saved node positions
+  useEffect(() => {
+    getGraphLayout(TEMP_HARDCODED_PROJECT_ID).then(
+      (layout) => {
+        if (!layout) return;
+        setNodes((currentNodes) =>
+          currentNodes.map((node) => {
+            const saved = layout.positions.find(
+              (p) => String(p.taskId) === node.id
+            );
+            return saved
+              ? { ...node, position: { x: saved.x, y: saved.y } }
+              : node;
+          })
+        );
+        setIsLoading(false);
+      }
+    );
+  }, [setNodes]);
+
+  // Persist node positions after dragging
+  const onNodeDragStop = useCallback(
+    (_event: MouseEvent | TouchEvent, draggedNode: Node) => {
+      const updatedNodes = nodes.map((node) =>
+        node.id === draggedNode.id ? draggedNode : node
+      );
+
+      saveGraphLayout(TEMP_HARDCODED_PROJECT_ID, {
+        positions: updatedNodes.map((node) => ({
+          taskId: Number(node.id),
+          x: node.position.x,
+          y: node.position.y,
+        })),
+      });
+    },
+    [nodes]
+  );
 
   const onConnect = useCallback(
     (connection: Connection) => {
@@ -147,18 +200,24 @@ export default function TaskGraph() {
 
   return (
     <div style={{ width: '100%', height: '100%'}}>
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        fitView
-      >
-        <Background />
-        <Controls />
-        <MiniMap />
-      </ReactFlow>
+      {isLoading
+        ? (<div>Loading graph...</div>)
+        : (
+            <ReactFlow
+              nodes={nodes}
+              edges={edges}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
+              onNodeDragStop={onNodeDragStop}
+              onConnect={onConnect}
+              fitView
+            >
+              <Background />
+              <Controls />
+              <MiniMap />
+            </ReactFlow>
+        )
+      }
     </div>
   );
 }
