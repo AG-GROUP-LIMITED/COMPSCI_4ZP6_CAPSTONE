@@ -32,12 +32,10 @@ export function DropDown({children}: DropDownProps) {
         <>
             {isOpen && (
                 <div
-                    className={`origin-top-right absolute inset-2 -top-${10*(React.Children.count(children)-1)} border border-gray-300 rounded-md shadow-lg bg-white  z-999`}
+                    className={`origin-top-right absolute left-2 right-2 bottom-2 -top-${10*(React.Children.count(children)-1)} border border-gray-300 rounded-md shadow-lg bg-white z-999`}
                     ref={ref}
                 >
-                    <div className="" role="none" >
                         {children}
-                    </div>
                 </div>
             )}
             <button className="w-full h-10 border border-gray-300 rounded-md transition-colors hover:bg-gray-100 flex items-center justify-center gap-2" onClick={toggleOpen} tabIndex={0}>

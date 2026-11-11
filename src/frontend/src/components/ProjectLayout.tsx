@@ -2,11 +2,16 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { SideBar, SideButton, SideMenu, SideSwitch } from './SideBar.tsx'
 import { Network, Files, List, type LucideIcon } from 'lucide-react'
 import TaskGraph from './Graph/TaskGraph.tsx'
-import { useNavigate, useParams } from 'react-router'
+import { useNavigate, useOutletContext, useParams } from 'react-router'
 
 type NodeType = "Task" | "Document" | "Test";
 type Progress = "Not Started" | "In Progress" | "Finished";
 type CreateNodeData = Omit<ProjectNode, "id">;
+
+type Project = {
+  id: number;
+  name: string;
+};
 
 type ProjectNode = {
   id: number;
@@ -18,12 +23,19 @@ type ProjectNode = {
   parentId: number | null;
 };
 
+interface LayoutContext {
+  setPageTitle: (title: string) => void;
+}
+
 export function ProjectLayout() {
+    const { setPageTitle } = useOutletContext<LayoutContext>();
+
     const [view, setView] = useState(true);
     const [isModalOpen, setModalOpen] = useState(false);
 
     const { id } = useParams();
-    const [selectedProjectId, setSelectedProjectId] = useState(id ?? 0);
+    const selectedProjectId = id ?? 0;
+    const [project, setProject] = useState<Project | null>(null);
 
     const [nodes, setNodes] = useState<ProjectNode[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -32,6 +44,26 @@ export function ProjectLayout() {
     const [error, setError] = useState<string | null>(null);
 
     const baseUrl = `/api/projects/${encodeURIComponent(selectedProjectId)}/nodes`;
+
+    const loadProject = async () => {
+      try {
+        const response = await fetch(`/api/projects/${id}`);
+
+        if (!response.ok) {
+          throw new Error("Could not load project.");
+        }
+
+        const loadedProject: Project = await response.json();
+
+        setProject(loadedProject);
+      } catch (err) {
+          setError(
+              err instanceof Error
+                  ? err.message
+                  : "Could not load project."
+          );
+      }
+    }
 
     const addNode = async (data: CreateNodeData): Promise<ProjectNode | null> => {
       if (!selectedProjectId) {
@@ -115,8 +147,26 @@ export function ProjectLayout() {
     };
 
     useEffect(() => {
+      if (!id) return;
+
+      void loadProject();
+    }, [id]);
+
+    useEffect(() => {
+      setPageTitle(project?.name ?? "");
+
+      return () => {
+        setPageTitle("");
+      };
+    }, [project?.name, setPageTitle])
+
+    useEffect(() => {
       void refreshNodes();
-    }, [refreshNodes]);
+
+      return () => {
+        setPageTitle("");
+      }
+    }, [refreshNodes, setPageTitle]);
 
     return(
         <>
@@ -142,7 +192,7 @@ export function ProjectLayout() {
                           className="block px-4 py-2 text-gray-700 h-10 w-full text-left hover:bg-gray-100"
                           key="otherButton"
                         >
-                            TODO: Other functionality
+                            Describe
                         </button>
                     ]
                 }
@@ -320,17 +370,6 @@ const NodeFormModal = ({isOpen, onClose, onSubmit, nodes, isSubmitting}: NodeFor
                       ))}
                     </select>
                 </div>
-                {/* <div className="mb-4">
-                    <label className="block text-sm">Email</label>
-                    <input
-                        className="w-full px-3
-                                   py-2 border rounded-lg"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        required
-                    />
-                </div> */}
                 <button
                     type="submit"
                     className="px-4 py-2 bg-green-500

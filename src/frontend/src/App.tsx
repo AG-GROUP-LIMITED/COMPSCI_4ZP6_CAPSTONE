@@ -68,38 +68,6 @@ function App() {
     void loadProjects();
   }, []);
 
-  useEffect(() => {
-    if (!selectedProjectId) {
-      setNodes([]);
-      return;
-    }
-
-    const loadNodes = async () => {
-      setIsLoadingNodes(true);
-      setError(null);
-      try {
-        const response = await fetch(
-          `/api/projects/${selectedProjectId}/nodes`,
-        );
-        if (!response.ok) {
-          throw new Error("Could not load nodes.");
-        }
-        const loadedNodes: ProjectNode[] = await response.json();
-        setNodes(loadedNodes);
-      } catch (loadError) {
-        setError(
-          loadError instanceof Error
-            ? loadError.message
-            : "Could not load nodes.",
-        );
-      } finally {
-        setIsLoadingNodes(false);
-      }
-    };
-
-    void loadNodes();
-  }, [selectedProjectId]);
-
   const createProject = async () => {
     setError(null);
     setIsCreating(true);
@@ -123,47 +91,6 @@ function App() {
     }
   };
 
-  const addNode = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!selectedProjectId) {
-      setError("Select a project before adding a node.");
-      return;
-    }
-
-    setError(null);
-    setIsAddingNode(true);
-    try {
-      const response = await fetch(`/api/projects/${selectedProjectId}/nodes`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title,
-          description,
-          deadline,
-          nodeType,
-          progress,
-          parentId: parentId ? Number(parentId) : null,
-        }),
-      });
-      if (!response.ok) {
-        throw new Error("Could not add node.");
-      }
-      const node: ProjectNode = await response.json();
-      setNodes((currentNodes) => [...currentNodes, node]);
-      setTitle("");
-      setDescription("");
-      setDeadline("");
-      setNodeType("Task");
-      setProgress("Not Started");
-      setParentId("");
-    } catch (addError) {
-      setError(
-        addError instanceof Error ? addError.message : "Could not add node.",
-      );
-    } finally {
-      setIsAddingNode(false);
-    }
-  };
   // HTML Code for Website
   return (
     <>

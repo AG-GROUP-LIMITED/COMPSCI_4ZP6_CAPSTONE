@@ -103,6 +103,10 @@ class ProjectRequestHandler(BaseHTTPRequestHandler):
             if match:
                 self.get_nodes(int(match.group(1)))
                 return
+            match = re.fullmatch(r"/api/projects/([1-9][0-9]*)", path)
+            if match:
+                self.get_one(int(match.group(1)))
+                return
             self.send_json(404, {"error": "Not found"})
             return
 
@@ -116,6 +120,27 @@ class ProjectRequestHandler(BaseHTTPRequestHandler):
         except sqlite3.Error:
             logging.exception("Could not load projects")
             self.send_json(500, {"error": "Could not load projects"})
+
+    def get_one(self, project_id):
+        try:
+            with connect_database() as connection:
+                project = connection.execute(
+                    'SELECT ProjectID, Description FROM "Project" WHERE ProjectID = ?', (project_id,)
+                ).fetchone()
+                if project is None:
+                    self.send_json(404, {"error": "Project not found"})
+                    return
+                
+            self.send_json(
+                200,
+                {
+                    "id": project[0],
+                    "name": project[1],
+                }
+            )
+        except sqlite3.Error:
+            logging.exception("Could not load project %s", project_id)
+            self.send_json(500, {"error": "Could not load project"})
 
     def get_nodes(self, project_id):
         try:
