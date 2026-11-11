@@ -13,22 +13,26 @@ export interface GraphLayout {
 // GET graph layout
 export const getGraphLayout = 
   async (projectId: number): Promise<GraphLayout | null> => {
-    console.log("Getting graph layout for project ID ", projectId)
+    console.log("getGraphLayout() called for project ID ", projectId)
     // TODO: implement GET /api/projects/{projectId}/graph/layout
     // TODO: replace below mock function with api response
-    return mockGetGraphLayout(projectId);
+    let response = mockGetGraphLayout(projectId);
+    console.log("Response: ", response)
+    return response;
   }
 
-// PUT graph layout
-export const saveGraphLayout = 
-  async (projectId: number, layout: GraphLayout): Promise<void> => {
-    console.log("Saving graph layout: ", projectId, layout)
-    // TODO: implement PUT /api/projects/{projectId}/graph/layout
+// PUT node position
+export const saveNodePosition = 
+  async (projectId: number, position: NodePosition): Promise<void> => {
+    console.log("saveNodePosition() called for: ", projectId, position)
+    // TODO: implement PUT /api/projects/{projectId}/graph/layout/{taskId}
   }
 
-// TODO: delete this function once this endpoint is implemented: GET /api/projects/{projectId}/graph/layout
+
+
+// TODO: delete below function once endpoint is implemented: GET /api/projects/{projectId}/graph/layout
 const mockGetGraphLayout = async (projectId: number) => {
-  console.log("mock GET graph layout for project ID: ", projectId)
+  console.log("mockGetGraphLayout() called for project ID: ", projectId)
   // add delay to mock load time
   await new Promise((resolve) => setTimeout(resolve, 500));
   // return node positions for that project ID

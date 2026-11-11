@@ -16,7 +16,7 @@ import {
 import '@xyflow/react/dist/style.css';
 import {
   getGraphLayout,
-  saveGraphLayout,
+  saveNodePosition,
 } from './taskGraphApi';
 
 const TEMP_HARDCODED_PROJECT_ID = 1;
@@ -120,20 +120,14 @@ export default function TaskGraph() {
 
   // Persist node positions after dragging
   const onNodeDragStop = useCallback(
-    (_event: MouseEvent | TouchEvent, draggedNode: Node) => {
-      const updatedNodes = nodes.map((node) =>
-        node.id === draggedNode.id ? draggedNode : node
-      );
-
-      saveGraphLayout(TEMP_HARDCODED_PROJECT_ID, {
-        positions: updatedNodes.map((node) => ({
-          taskId: Number(node.id),
-          x: node.position.x,
-          y: node.position.y,
-        })),
+    (_: MouseEvent | TouchEvent, draggedNode: Node) => {
+      saveNodePosition(TEMP_HARDCODED_PROJECT_ID, {
+        taskId: Number(draggedNode.id),
+        x: draggedNode.position.x,
+        y: draggedNode.position.y,
       });
     },
-    [nodes]
+    []
   );
 
   const onConnect = useCallback(
