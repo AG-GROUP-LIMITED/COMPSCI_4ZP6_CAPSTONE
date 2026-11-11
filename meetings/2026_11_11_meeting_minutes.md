@@ -37,5 +37,9 @@ Notes:
   - TODO: begin LLM poc
     - kris
   - TODO (frontend): continue frontend work
+    - gray
+    - search bar
+    - create item menu
+    - detail pop-up
   - TODO: set up FastAPI for running backend
     - oliver
