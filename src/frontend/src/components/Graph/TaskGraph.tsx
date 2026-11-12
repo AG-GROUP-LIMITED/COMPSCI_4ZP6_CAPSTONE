@@ -1,5 +1,4 @@
-
-import { useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   ReactFlow,
   Background,
@@ -14,8 +13,13 @@ import {
   type Edge,
   type Connection,
 } from '@xyflow/react';
-
 import '@xyflow/react/dist/style.css';
+import {
+  getGraphLayout,
+  saveNodePosition,
+} from './taskGraphApi';
+
+const TEMP_HARDCODED_PROJECT_ID = 1;
 
 type TaskStatus = 'Finished' | 'In Progress' | 'Not Started';
 type TaskType = 'Task' | 'Test' | 'Document';
@@ -31,6 +35,7 @@ interface Task {
   ownerId: number;
 }
 
+// TODO: replace this with GET api call
 const tasks: Task[] = [
   { id: 101, parentId: null, title: 'Project Setup', description: 'Set up the initial project structure and repository.', dueDate: '2026-11-04', type: 'Task', status: 'Finished', ownerId: 101 },
   { id: 102, parentId: 101, title: 'Design Database', description: 'Create the initial database schema.', dueDate: '2026-11-07', type: 'Task', status: 'In Progress', ownerId: 102 },
@@ -48,20 +53,9 @@ const statusColors: Record<TaskStatus, string> = {
   'Not Started': '#94a3b8',
 };
 
-const positions: Record<number, { x: number; y: number }> = {
-  101: { x: 0, y: 150 },
-  102: { x: 300, y: 0 },
-  103: { x: 300, y: 300 },
-  104: { x: 600, y: 0 },
-  105: { x: 600, y: 300 },
-  106: { x: 900, y: 0 },
-  107: { x: 0, y: 450 },
-  108: { x: 0, y: 600 },
-};
-
 const initialNodes: Node[] = tasks.map((task) => ({
   id: String(task.id),
-  position: positions[task.id],
+  position: { x: 0, y: 0},  // fallback
   sourcePosition: Position.Right,
   targetPosition: Position.Left,
   data: {
@@ -100,8 +94,41 @@ const initialEdges: Edge[] = tasks
   }));
 
 export default function TaskGraph() {
-  const [nodes, , onNodesChange] = useNodesState(initialNodes);
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load saved node positions
+  useEffect(() => {
+    getGraphLayout(TEMP_HARDCODED_PROJECT_ID).then(
+      (layout) => {
+        if (!layout) return;
+        setNodes((currentNodes) =>
+          currentNodes.map((node) => {
+            const saved = layout.positions.find(
+              (p) => String(p.taskId) === node.id
+            );
+            return saved
+              ? { ...node, position: { x: saved.x, y: saved.y } }
+              : node;
+          })
+        );
+        setIsLoading(false);
+      }
+    );
+  }, [setNodes]);
+
+  // Persist node positions after dragging
+  const onNodeDragStop = useCallback(
+    (_: MouseEvent | TouchEvent, draggedNode: Node) => {
+      saveNodePosition(TEMP_HARDCODED_PROJECT_ID, {
+        taskId: Number(draggedNode.id),
+        x: draggedNode.position.x,
+        y: draggedNode.position.y,
+      });
+    },
+    []
+  );
 
   const onConnect = useCallback(
     (connection: Connection) => {
@@ -120,18 +147,24 @@ export default function TaskGraph() {
 
   return (
     <div style={{ width: '100%', height: '100%'}}>
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        fitView
-      >
-        <Background />
-        <Controls />
-        <MiniMap />
-      </ReactFlow>
+      {isLoading
+        ? (<div>Loading graph...</div>)
+        : (
+            <ReactFlow
+              nodes={nodes}
+              edges={edges}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
+              onNodeDragStop={onNodeDragStop}
+              onConnect={onConnect}
+              fitView
+            >
+              <Background />
+              <Controls />
+              <MiniMap />
+            </ReactFlow>
+        )
+      }
     </div>
   );
 }
