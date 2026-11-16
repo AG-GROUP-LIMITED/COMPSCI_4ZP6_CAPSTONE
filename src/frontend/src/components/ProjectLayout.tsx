@@ -3,6 +3,7 @@ import { SideBar, SideButton, SideMenu, SideSwitch } from './SideBar.tsx'
 import { Network, Files, List, type LucideIcon } from 'lucide-react'
 import TaskGraph from './Graph/TaskGraph.tsx'
 import { useNavigate, useOutletContext, useParams } from 'react-router'
+import { ReactFlowProvider } from '@xyflow/react';
 
 type NodeType = "Task" | "Document" | "Test";
 type Progress = "Not Started" | "In Progress" | "Finished";
@@ -205,7 +206,7 @@ export function ProjectLayout() {
                   </div>
               )}
 
-              {isLoading ? (<p>Loading nodes...</p>) : view ? "TODO: implement list view" : <TaskGraph/>}
+              {isLoading ? (<p>Loading nodes...</p>) : view ? "TODO: implement list view" : <ReactFlowProvider><TaskGraph/></ReactFlowProvider>}
               <NodeFormModal
                   isOpen={isModalOpen}
                   onClose={handleCloseModal}

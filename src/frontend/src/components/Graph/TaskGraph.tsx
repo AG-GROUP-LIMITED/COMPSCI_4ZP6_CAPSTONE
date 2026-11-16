@@ -18,6 +18,7 @@ import {
   getGraphLayout,
   saveNodePosition,
 } from './taskGraphApi';
+import { useUndoRedo } from '../../hooks/useUndoRedo';
 
 const TEMP_HARDCODED_PROJECT_ID = 1;
 
@@ -98,6 +99,56 @@ export default function TaskGraph() {
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [isLoading, setIsLoading] = useState(true);
 
+  const {
+    takeSnapshot,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+  } = useUndoRedo();
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Don't override shortcuts while typing
+      const target = event.target;
+
+      if (
+        target instanceof HTMLElement &&
+        (target.isContentEditable ||
+          ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))
+      ) {
+        return;
+      }
+
+      // Ctrl or Cmd
+      if (!(event.ctrlKey || event.metaKey)) return;
+
+      const key = event.key.toLowerCase();
+
+      // Undo: Ctrl + Z
+      if (key === 'z' && !event.shiftKey) {
+        if (!canUndo) return;
+
+        event.preventDefault();
+        undo();
+      }
+
+      // Redo: Ctrl + Shift + Z
+      else if (key === 'z' && event.shiftKey) {
+        if (!canRedo) return;
+
+        event.preventDefault();
+        redo();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [undo, redo, canUndo, canRedo]);
+
   // Load saved node positions
   useEffect(() => {
     getGraphLayout(TEMP_HARDCODED_PROJECT_ID).then(
@@ -132,6 +183,8 @@ export default function TaskGraph() {
 
   const onConnect = useCallback(
     (connection: Connection) => {
+      takeSnapshot();
+
       const newEdge: Edge = {
         ...connection,
         id: `e-${connection.source}-${connection.target}`,
@@ -142,7 +195,7 @@ export default function TaskGraph() {
         addEdge(newEdge, currentEdges)
       );
     },
-    [setEdges]
+    [takeSnapshot, setEdges]
   );
 
   return (
@@ -150,19 +203,44 @@ export default function TaskGraph() {
       {isLoading
         ? (<div>Loading graph...</div>)
         : (
-            <ReactFlow
-              nodes={nodes}
-              edges={edges}
-              onNodesChange={onNodesChange}
-              onEdgesChange={onEdgesChange}
-              onNodeDragStop={onNodeDragStop}
-              onConnect={onConnect}
-              fitView
-            >
-              <Background />
-              <Controls />
-              <MiniMap />
-            </ReactFlow>
+            <>
+            {/* Undo / Redo Buttons */}
+              <div className="top-4 left-4 z-10 flex gap-2">
+                <button
+                  onClick={undo}
+                  disabled={!canUndo}
+                  className="rounded bg-white px-3 py-2 shadow
+                            hover:bg-gray-100 disabled:opacity-40"
+                  title="Undo (Ctrl+Z)"
+                >
+                  ↶ Undo
+                </button>
+
+                <button
+                  onClick={redo}
+                  disabled={!canRedo}
+                  className="rounded bg-white px-3 py-2 shadow
+                            hover:bg-gray-100 disabled:opacity-40"
+                  title="Redo (Ctrl+Shift+Z)"
+                >
+                  ↷ Redo
+                </button>
+              </div>
+              <ReactFlow
+                nodes={nodes}
+                edges={edges}
+                onNodesChange={onNodesChange}
+                onEdgesChange={onEdgesChange}
+                onNodeDragStop={onNodeDragStop}
+                onNodeDragStart={() => takeSnapshot()}
+                onConnect={onConnect}
+                fitView
+              >
+                <Background />
+                <Controls />
+                <MiniMap />
+              </ReactFlow>
+            </>
         )
       }
     </div>
