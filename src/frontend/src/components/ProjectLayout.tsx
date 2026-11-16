@@ -30,7 +30,7 @@ interface LayoutContext {
 export function ProjectLayout() {
     const { setPageTitle } = useOutletContext<LayoutContext>();
 
-    const [view, setView] = useState(true);
+    const [view, setView] = useState(false);
     const [isModalOpen, setModalOpen] = useState(false);
 
     const { id } = useParams();
@@ -205,7 +205,7 @@ export function ProjectLayout() {
                   </div>
               )}
 
-              {isLoading ? (<p>Loading nodes...</p>) : view ? "TODO: implement list view" : <TaskGraph/>}
+              {isLoading ? (<p>Loading nodes...</p>) : view ? "TODO: implement list view" : <TaskGraph projectId={selectedProjectId as number} projectNodes={nodes}/>}
               <NodeFormModal
                   isOpen={isModalOpen}
                   onClose={handleCloseModal}
