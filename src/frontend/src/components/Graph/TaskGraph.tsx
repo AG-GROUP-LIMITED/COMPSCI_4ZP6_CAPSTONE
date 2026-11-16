@@ -198,6 +198,17 @@ export default function TaskGraph() {
     [takeSnapshot, setEdges]
   );
 
+  const onBeforeDelete = useCallback(
+    async ({ nodes, edges }: { nodes: Node[]; edges: Edge[] }) => {
+      if (nodes.length > 0 || edges.length > 0) {
+        takeSnapshot();
+      }
+
+      return true;
+    },
+    [takeSnapshot]
+  );
+
   return (
     <div style={{ width: '100%', height: '100%'}}>
       {isLoading
@@ -234,6 +245,7 @@ export default function TaskGraph() {
                 onNodeDragStop={onNodeDragStop}
                 onNodeDragStart={() => takeSnapshot()}
                 onConnect={onConnect}
+                onBeforeDelete={onBeforeDelete}
                 fitView
               >
                 <Background />
