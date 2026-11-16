@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { SideBar, SideButton, SideMenu, SideSwitch } from './SideBar.tsx'
 import { Network, Files, List, type LucideIcon } from 'lucide-react'
 import TaskGraph from './Graph/TaskGraph.tsx'
@@ -225,18 +225,42 @@ interface modalProps {
 }
 
 const Modal = ({ isOpen, onClose, children }: modalProps) => {
-    if (!isOpen) return null;
+  const modalRef = useRef<HTMLDivElement>(null);
 
-    return (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full relative">
-                <button className="absolute top-2 right-2 text-gray-500 hover:text-gray-700" onClick={onClose}>
-                    &#x2715;
-                </button>
-                {children}
-            </div>
-        </div>
-    );
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleOutsideClick = (e: PointerEvent) => {
+      const target = e.target;
+
+      if (
+        target instanceof Node &&
+        modalRef.current &&
+        !modalRef.current.contains(target)
+      ) {
+        onClose();
+      }
+    };
+
+    document.addEventListener("pointerdown", handleOutsideClick, true);
+
+    return () => {
+      document.removeEventListener("pointerdown", handleOutsideClick, true);
+    }
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  return (
+      <div className="fixed inset-0 flex items-center justify-center bg-black/50">
+          <div ref={modalRef} className="bg-white h-min max-h-4/5 m-5 rounded-lg shadow-lg p-6 max-w-lg w-full flex flex-col relative overflow-hidden">
+              <button className="absolute top-[25px] right-[25px] text-gray-500 hover:text-gray-700" onClick={onClose}>
+                  &#x2715;
+              </button>
+              {children}
+          </div>
+      </div>
+  );
 };
 
 interface NodeFormModalProps {
@@ -286,13 +310,13 @@ const NodeFormModal = ({isOpen, onClose, onSubmit, nodes, isSubmitting}: NodeFor
 
     return (
         <Modal isOpen={isOpen} onClose={onClose}>
-            <h2 className="text-lg font-bold">Create Node</h2>
-            <form onSubmit={handleSubmit}>
-                <div className="mb-4">
+            <h2 className="text-lg font-semibold">Create Node</h2>
+            <form onSubmit={handleSubmit} className="flex-1 min-h-0 overflow-auto flex">
+                <div className="flex-1 flex flex-col gap-2 min-h-full shrink-0">
                     <label className="block text-sm" htmlFor="titleInput">Title</label>
                     <input
                         className="w-full px-3 py-2
-                                   border rounded-lg"
+                                   border border-gray-300 rounded-lg"
                         id="titleInput"
                         type="text"
                         value={title}
@@ -302,23 +326,25 @@ const NodeFormModal = ({isOpen, onClose, onSubmit, nodes, isSubmitting}: NodeFor
                         placeholder="Node title"
                     />
 
-                    <label className="block text-sm" htmlFor="descriptionInput">Description</label>
-                    <textarea
-                        className="w-full px-3 py-2
-                                   border rounded-lg"
-                        id="descriptionInput"
-                        rows={3}
-                        value={description}
-                        onChange={e => setDescription(e.target.value)}
-                        maxLength={255}
-                        required
-                        placeholder="Node description"
-                    />
+                    <div className="flex flex-col gap-2">
+                      <label className="block text-sm" htmlFor="descriptionInput">Description</label>
+                      <textarea
+                          className="w-full px-3 py-2
+                                    border border-gray-300 rounded-lg resize-y min-h-10"
+                          id="descriptionInput"
+                          rows={3}
+                          value={description}
+                          onChange={e => setDescription(e.target.value)}
+                          maxLength={255}
+                          required
+                          placeholder="Node description"
+                      />
+                    </div>
 
                     <label className="block text-sm" htmlFor="deadlineInput">Deadline</label>
                     <input
                         className="w-full px-3 py-2
-                                   border rounded-lg"
+                                   border border-gray-300 rounded-lg"
                         id="deadlineInput"
                         type="datetime-local"
                         value={deadline}
@@ -330,7 +356,7 @@ const NodeFormModal = ({isOpen, onClose, onSubmit, nodes, isSubmitting}: NodeFor
 
                     <label className="block text-sm" htmlFor="nodetypeInput">Node Type</label>
                     <select
-                      className="w-full px-3 py-2 border rounded-lg"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                       id="nodetypeInput"
                       value={nodeType}
                       onChange={e => setNodeType(e.target.value as NodeType)}
@@ -343,7 +369,7 @@ const NodeFormModal = ({isOpen, onClose, onSubmit, nodes, isSubmitting}: NodeFor
 
                     <label className="block text-sm" htmlFor="progressInput">Progress</label>
                     <select
-                      className="w-full px-3 py-2 border rounded-lg"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                       id="progressInput"
                       value={progress}
                       onChange={e => setProgress(e.target.value as Progress)}
@@ -356,7 +382,7 @@ const NodeFormModal = ({isOpen, onClose, onSubmit, nodes, isSubmitting}: NodeFor
 
                     <label className="block text-sm" htmlFor="parentInput">Parent Node</label>
                     <select
-                      className="w-full px-3 py-2 border rounded-lg"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                       id="parentInput"
                       value={parentId}
                       onChange={e => setParentId(e.target.value)}
@@ -369,8 +395,7 @@ const NodeFormModal = ({isOpen, onClose, onSubmit, nodes, isSubmitting}: NodeFor
                         </option>
                       ))}
                     </select>
-                </div>
-                <button
+                    <button
                     type="submit"
                     className="px-4 py-2 bg-green-500
                                text-white rounded-lg"
@@ -378,6 +403,8 @@ const NodeFormModal = ({isOpen, onClose, onSubmit, nodes, isSubmitting}: NodeFor
                 >
                     {isSubmitting ? "Saving..." : "Add Node"}
                 </button>
+                </div>
+                
             </form>
         </Modal>
     );

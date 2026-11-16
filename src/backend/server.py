@@ -114,9 +114,9 @@ class ProjectRequestHandler(BaseHTTPRequestHandler):
             with connect_database() as connection:
                 rows = connection.execute(
                     'SELECT ProjectID, COALESCE(NULLIF(Description, \'\'), '
-                    "'Project ' || ProjectID) FROM \"Project\" ORDER BY ProjectID"
+                    "'Project ' || ProjectID), CREATED FROM \"Project\" ORDER BY ProjectID"
                 ).fetchall()
-            self.send_json(200, [{"id": row[0], "name": row[1]} for row in rows])
+            self.send_json(200, [{"id": row[0], "name": row[1], "created": row[2]} for row in rows])
         except sqlite3.Error:
             logging.exception("Could not load projects")
             self.send_json(500, {"error": "Could not load projects"})

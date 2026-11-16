@@ -1,4 +1,5 @@
 import React from 'react'
+import { useNavigate } from 'react-router';
 
 interface NavProps {
     children: React.ReactNode;
@@ -13,8 +14,10 @@ export function NavBar({children}: NavProps) {
 };
 
 export function NavLeft({children}: NavProps) {
+    const navigate = useNavigate();
+
     return (
-        <div className="font-bold">
+        <div className="font-bold" onClick={() => navigate("/home")}>
             {children}
         </div>
     )

@@ -8,32 +8,55 @@ export function DropDown({children}: DropDownProps) {
     const [isOpen, setIsOpen] = useState(false);
 
     const toggleOpen = () => {
-        setIsOpen(!isOpen);
+        setIsOpen(current => !current);
     };
 
     const ref = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        console.log("in useeffect")
-        const checkIfClickedOutside = (e: MouseEvent) => {
-            if (isOpen && ref.current && !ref.current.contains(e.target as Node)) {
+        if (!isOpen) return;
+        
+        // const checkIfClickedOutside = (e: MouseEvent) => {
+        //     if (isOpen && ref.current && !ref.current.contains(e.target as Node)) {
+        //         setIsOpen(false);
+        //     }
+        // }
+
+        // document.addEventListener("mousedown", checkIfClickedOutside);
+
+        // return () => {
+        //     document.removeEventListener("mousedown", checkIfClickedOutside)
+        // }
+
+        const handleOutsideClick = (e: PointerEvent) => {
+            const target = e.target;
+
+            if (
+                target instanceof Node &&
+                ref.current &&
+                !ref.current.contains(target)
+            ) {
                 setIsOpen(false);
             }
         }
 
-        document.addEventListener("mousedown", checkIfClickedOutside);
+        document.addEventListener("pointerdown", handleOutsideClick, true);
 
         return () => {
-            document.removeEventListener("mousedown", checkIfClickedOutside)
-        }
+            document.removeEventListener("pointerdown", handleOutsideClick, true);
+        };
     }, [isOpen]);
 
     return (
-        <>
+        <div ref={ref} className="relative w-full">
             {isOpen && (
                 <div
                     className={`origin-top-right absolute left-2 right-2 bottom-2 -top-${10*(React.Children.count(children)-1)} border border-gray-300 rounded-md shadow-lg bg-white z-999`}
-                    ref={ref}
+                    onClick={(e) => {
+                        if ((e.target as HTMLElement).closest("button")) {
+                            setIsOpen(false);
+                        }
+                    }}
                 >
                         {children}
                 </div>
@@ -41,6 +64,6 @@ export function DropDown({children}: DropDownProps) {
             <button className="w-full h-10 border border-gray-300 rounded-md transition-colors hover:bg-gray-100 flex items-center justify-center gap-2" onClick={toggleOpen} tabIndex={0}>
                 <span>Create</span>
             </button>
-        </>
+        </div>
     );
 };
