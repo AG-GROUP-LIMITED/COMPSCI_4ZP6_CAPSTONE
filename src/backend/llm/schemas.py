@@ -1,12 +1,12 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 # TODO: get Node and Edge type dynamically from database schema
 
 class Node(BaseModel):
     node_id: int
     type: str
-    description: str
-    progress: str
+    description: str | None
+    progress: str | None
     assignee_id: int
 
 
@@ -25,9 +25,11 @@ class Comment(BaseModel):
 
 
 class GraphState(BaseModel):
-    title: str
-    description: str
-    collaborators: list[str]
-    nodes: list[Node]
-    edges: list[Edge]
-    comments: list[Comment]
+    model_config = ConfigDict(extra="forbid")  # No extra fields
+
+    title: str | None
+    description: str | None
+    collaborators: list[str] = []
+    nodes: list[Node] = []
+    edges: list[Edge] = []
+    comments: list[Comment] = []
