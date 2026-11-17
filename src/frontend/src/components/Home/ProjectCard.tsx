@@ -2,7 +2,7 @@ import { useNavigate } from "react-router";
 
 type Project = {
     id: number;
-    name: string;
+    title: string;
     created: Date;
 }
 
@@ -17,7 +17,7 @@ export function ProjectCard({project}: CardProps) {
             <li className="flex flex-col w-full border border-gray-300 rounded-md p-3 gap-3 items-center" key={`${project.id}`} onClick={() => navigate(`/projects/${project.id}`)}>
                 <div className="w-full flex justify-between">
                     <div className="truncate font-medium text-[12px] sm:text-base">
-                    {project.name}
+                    {project.title}
                     </div>
                     <div className="text-gray-500 text-[10px] sm:text-xs content-center">
                     {new Date(project.created).toLocaleDateString()}

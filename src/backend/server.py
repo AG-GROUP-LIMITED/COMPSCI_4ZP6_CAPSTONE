@@ -235,6 +235,8 @@ class ProjectRequestHandler(BaseHTTPRequestHandler):
                 logging.exception("Could not load projects")
                 self.send_json(500, {"error": "Could not load projects"})
 
+            return
+
         match = re.fullmatch(
             r"/api/projects/([1-9][0-9]*)/nodes/([1-9][0-9]*)/comments",
             path,
@@ -871,14 +873,13 @@ class ProjectRequestHandler(BaseHTTPRequestHandler):
         if payload is None:
             return
 
-        source_node = payload.get("sourceNode")
-        target_node = payload.get("targetNode")
-        edge_type = payload.get("edge_type", "ParentOf")
+        source_node = payload.get("source")
+        target_node = payload.get("dest")
+        edge_type = payload.get("edgeType", "ParentOf")
 
         if not isinstance(edge_type, str) or edge_type not in {
-            "Not Started",
-            "In Progress",
-            "Finished",
+            "ParentOf",
+            "FileReference",
         }:
             self.send_json(400, {"error": "Invalid edge type value"})
             return
@@ -909,8 +910,8 @@ class ProjectRequestHandler(BaseHTTPRequestHandler):
 
                 connection.execute(
                     'INSERT INTO "Edge" '
-                    "(Title, Description, OwnerID) "
-                    "VALUES (?, ?, ?)",
+                    "(EdgeID, ProjectID, SourceNodeID, TargetNodeID, EdgeType) "
+                    "VALUES (?, ?, ?, ?, ?)",
                     (
                         edge_id,
                         project_id,

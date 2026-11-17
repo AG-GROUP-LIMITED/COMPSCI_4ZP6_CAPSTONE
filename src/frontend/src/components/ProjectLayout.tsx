@@ -5,8 +5,10 @@ import TaskGraph from './Graph/TaskGraph.tsx'
 import { useNavigate, useOutletContext, useParams } from 'react-router'
 
 type NodeType = "Task" | "Document" | "Test";
+type EdgeType = "FileReference" | "ParentOf";
 type Progress = "Not Started" | "In Progress" | "Finished";
 type CreateNodeData = Omit<ProjectNode, "id">;
+type CreateEdgeData = Omit<ProjectEdge, "id">;
 
 type Project = {
   id: number;
@@ -23,6 +25,13 @@ type ProjectNode = {
   parentId: number | null;
 };
 
+type ProjectEdge = {
+  id: number;
+  source: number;
+  dest: number;
+  edgeType: EdgeType
+}
+
 interface LayoutContext {
   setPageTitle: (title: string) => void;
 }
@@ -38,12 +47,13 @@ export function ProjectLayout() {
     const [project, setProject] = useState<Project | null>(null);
 
     const [nodes, setNodes] = useState<ProjectNode[]>([]);
+    const [edges, setEdges] = useState<ProjectEdge[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isMutating, setIsMutating] = useState(false);
 
     const [error, setError] = useState<string | null>(null);
 
-    const baseUrl = `/api/projects/${encodeURIComponent(selectedProjectId)}/nodes`;
+    const baseUrl = `/api/projects/${encodeURIComponent(selectedProjectId)}`;
 
     const loadProject = async () => {
       try {
@@ -75,19 +85,42 @@ export function ProjectLayout() {
       setError(null);
 
       try {
-        const response = await fetch(baseUrl, {
+        const nodeRes = await fetch(baseUrl + "/nodes", {
           method: "POST",
           headers: {"Content-Type": "application/json"},
           body: JSON.stringify(data)
         });
 
-        if (!response.ok) {
+        if (!nodeRes.ok) {
           throw new Error("Could not add node.");
         }
 
-        const newNode: ProjectNode = await response.json();
+        const newNode: ProjectNode = await nodeRes.json();
 
         setNodes(current => [...current, newNode]);
+
+        if (data.parentId != null) {
+          const edgeData: CreateEdgeData = {
+            source: data.parentId,
+            dest: newNode.id,
+            edgeType: "ParentOf"
+          };
+          
+          const edgeRes = await fetch(`${baseUrl}/edges`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(edgeData),
+          });
+
+          if (!edgeRes.ok) {
+            throw new Error(
+              "Node was created, but parent relationship could not be saved."
+            );
+          }
+
+          const newEdge: ProjectEdge = await edgeRes.json();
+          setEdges(current => [...current, newEdge]);
+        }
 
         return newNode;
       } catch (err) {
@@ -101,9 +134,10 @@ export function ProjectLayout() {
       }
     };
 
-    const refreshNodes = useCallback(async () => {
+    const refreshProject = useCallback(async () => {
       if (!selectedProjectId) {
         setNodes([]);
+        setEdges([]);
         return;
       };
 
@@ -111,18 +145,29 @@ export function ProjectLayout() {
       setError(null);
 
       try {
-        const response = await fetch(baseUrl);
+        const [nodeRes, edgeRes] = await Promise.all([
+          fetch(`${baseUrl}/nodes`),
+          fetch(`${baseUrl}/edges`)
+        ]);
 
-        if (!response.ok) {
+        if (!nodeRes.ok) {
           throw new Error("Could not load nodes.");
         }
 
-        const loadedNodes: ProjectNode[] = await response.json();
+        if (!edgeRes.ok) {
+          throw new Error("Could not load edges.");
+        }
+
+        const [loadedNodes, loadedEdges]: [ProjectNode[], ProjectEdge[]] = await Promise.all([
+          nodeRes.json(),
+          edgeRes.json()
+        ]);
 
         setNodes(loadedNodes);
+        setEdges(loadedEdges);
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : "Could not load nodes."
+          err instanceof Error ? "here" + err.message : "Could not load project data."
         );
       } finally {
         setIsLoading(false);
@@ -161,12 +206,12 @@ export function ProjectLayout() {
     }, [project?.name, setPageTitle])
 
     useEffect(() => {
-      void refreshNodes();
+      void refreshProject();
 
       return () => {
         setPageTitle("");
       }
-    }, [refreshNodes, setPageTitle]);
+    }, [refreshProject, setPageTitle]);
 
     return(
         <>
@@ -205,7 +250,11 @@ export function ProjectLayout() {
                   </div>
               )}
 
-              {isLoading ? (<p>Loading nodes...</p>) : view ? "TODO: implement list view" : <TaskGraph projectId={selectedProjectId as number} projectNodes={nodes}/>}
+              {isLoading 
+                ? (<p>Loading nodes...</p>) 
+                : view 
+                  ? "TODO: implement list view" 
+                  : <TaskGraph projectId={selectedProjectId as number} projectNodes={nodes} projectEdges={edges}/>}
               <NodeFormModal
                   isOpen={isModalOpen}
                   onClose={handleCloseModal}

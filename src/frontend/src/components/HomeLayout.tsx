@@ -4,7 +4,7 @@ import { ProjectCard } from './Home/ProjectCard';
 
 type Project = {
   id: number;
-  name: string;
+  title: string;
   created: Date;
 };
 

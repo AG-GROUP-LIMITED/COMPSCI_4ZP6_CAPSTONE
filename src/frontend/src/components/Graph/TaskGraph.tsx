@@ -14,12 +14,14 @@ import {
   type Connection,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+
 import {
   getGraphLayout,
   saveNodePosition,
 } from './taskGraphApi';
 
 type NodeType = "Task" | "Document" | "Test";
+type EdgeType = "FileReference" | "ParentOf";
 type Progress = "Not Started" | "In Progress" | "Finished";
 
 type ProjectNode = {
@@ -32,9 +34,17 @@ type ProjectNode = {
   parentId: number | null;
 };
 
+type ProjectEdge = {
+  id: number;
+  source: number;
+  dest: number;
+  edgeType: EdgeType
+}
+
 interface GraphProps {
   projectId: number;
   projectNodes: ProjectNode[];
+  projectEdges: ProjectEdge[];
 }
 
 // TODO: replace this with GET api call
@@ -55,23 +65,35 @@ const statusColors: Record<Progress, string> = {
   'Not Started': '#94a3b8',
 };
 
-const edgeStyle = {
-  type: 'smoothstep',
-  markerEnd: {
-    type: MarkerType.ArrowClosed,
+const edgeStyles: Record<EdgeType, Partial<Edge>> = {
+  ParentOf: {
+    type: 'smoothstep',
+    markerEnd: {
+      type: MarkerType.ArrowClosed,
+    },
+    style: {
+      stroke: '#64748b',
+      strokeWidth: 2,
+    }
   },
-  style: {
-    stroke: '#64748b',
-    strokeWidth: 2,
+  FileReference: {
+    type: 'smoothstep',
+    markerEnd: {
+      type: MarkerType.ArrowClosed,
+    },
+    style: {
+      stroke: '#3b82f6',
+      strokeWidth: 2,
+      strokeDasharray: '5 5',
+    },
   },
 };
 
-export default function TaskGraph({projectId, projectNodes}: GraphProps) {
+export default function TaskGraph({projectId, projectNodes, projectEdges}: GraphProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [isLayoutLoading, setIsLayoutLoading] = useState(true);
 
-  // Load saved node positions
   useEffect(() => {
     setNodes(currentNodes => {
       return projectNodes.map((node, index) => {
@@ -105,14 +127,17 @@ export default function TaskGraph({projectId, projectNodes}: GraphProps) {
     });
 
     setEdges(
-      projectNodes.filter(node => node.parentId !== null).map(node => ({
-        id: `e-${node.parentId}-${node.id}`,
-        source: String(node.parentId),
-        target: String(node.id),
-        ...edgeStyle,
+      projectEdges.map(edge => ({
+        id: String(edge.id),
+        source: String(edge.source),
+        target: String(edge.dest),
+        ...edgeStyles[edge.edgeType],
+        data: {
+          edgeType: edge.edgeType,
+        },
       }))
     );
-  }, [projectNodes, setNodes, setEdges]);
+  }, [projectNodes, projectEdges, setNodes, setEdges]);
 
   // Load saved node positions for this project.
   useEffect(() => {
@@ -168,22 +193,77 @@ export default function TaskGraph({projectId, projectNodes}: GraphProps) {
       });
     },
     [projectId]
-  );
+  )
 
-  const onConnect = useCallback(
-    (connection: Connection) => {
+  const onConnect = useCallback(async (connection: Connection) => {
+    if (!connection.source || !connection.target) return;
+
+    const source = Number(connection.source);
+    const dest = Number(connection.target);
+
+    if (!Number.isInteger(source) || !Number.isInteger(dest)) {
+      console.error("Invalid node IDs for edge conneciton");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `/api/projects/${projectId}/edges`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            source,
+            dest,
+            edgeType: "ParentOf"
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorBody = await response.text();
+        throw new Error(
+          `Could not create edge (${response.status}): ${errorBody}`
+        );
+      }
+
+      const savedEdge: ProjectEdge = await response.json();
+
       const newEdge: Edge = {
-        ...connection,
-        id: `e-${connection.source}-${connection.target}`,
-        ...edgeStyle,
+        id: String(savedEdge.id),
+        source: String(savedEdge.source),
+        target: String(savedEdge.dest),
+        data: {
+          edgeType: savedEdge.edgeType,
+        },
+        ...edgeStyles[savedEdge.edgeType],
       };
 
-      setEdges((currentEdges) =>
-        addEdge(newEdge, currentEdges)
-      );
-    },
-    [setEdges]
-  );
+      setEdges(currentEdges => addEdge(newEdge, currentEdges));
+    } catch (error) {
+      console.error("Failed to create edge:", error);
+    }
+  }, [projectId, setEdges]);
+  // const onConnect = useCallback(
+  //   (connection: Connection) => {
+  //     const newEdge: Edge = {
+  //       ...connection,
+  //       id: `temp-${connection.source}-${connection.target}`,
+  //       type: 'smoothstep',
+  //       ...edgeStyles['ParentOf'],
+  //       data: {
+  //         edgeType: 'ParentOf',
+  //       },
+  //     };
+
+  //     setEdges(currentEdges => 
+  //       addEdge(newEdge, currentEdges)
+  //     );
+  //   },
+  //   [setEdges]
+  // );
 
   return (
     <div style={{ width: '100%', height: '100%'}}>

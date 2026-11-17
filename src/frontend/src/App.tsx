@@ -33,31 +33,31 @@ function App() {
   const [error, setError] = useState<string | null>(null);
 
   // Function Code
-  useEffect(() => {
-    const loadProjects = async () => {
-      try {
-        const response = await fetch("/api/projects");
-        if (!response.ok) {
-          throw new Error("Could not load projects.");
-        }
-        const loadedProjects: Project[] = await response.json();
-        setProjects(loadedProjects);
-        if (loadedProjects.length > 0) {
-          setSelectedProjectId(String(loadedProjects[0].id));
-        }
-      } catch (loadError) {
-        setError(
-          loadError instanceof Error
-            ? loadError.message
-            : "Could not load projects.",
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  // useEffect(() => {
+  //   const loadProjects = async () => {
+  //     try {
+  //       const response = await fetch("/api/projects");
+  //       if (!response.ok) {
+  //         throw new Error("Could not load projects.");
+  //       }
+  //       const loadedProjects: Project[] = await response.json();
+  //       setProjects(loadedProjects);
+  //       if (loadedProjects.length > 0) {
+  //         setSelectedProjectId(String(loadedProjects[0].id));
+  //       }
+  //     } catch (loadError) {
+  //       setError(
+  //         loadError instanceof Error
+  //           ? loadError.message
+  //           : "Could not load projects.",
+  //       );
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   };
 
-    void loadProjects();
-  }, []);
+  //   void loadProjects();
+  // }, []);
 
   const createProject = async () => {
     setError(null);
