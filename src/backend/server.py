@@ -305,7 +305,9 @@ class ProjectRequestHandler(BaseHTTPRequestHandler):
             self.send_json(
                 200,
                 {
-                    "id": project[0],
+                    "projectId": project[0],
+                    # Demo value
+                    "owner": "Demo Owner",
                     "title": project[1],
                     "description": project[2],
                 }
@@ -333,7 +335,8 @@ class ProjectRequestHandler(BaseHTTPRequestHandler):
                 200,
                 [
                     {
-                        "id": row[0],
+                        "nodeId": row[0],
+                        "projectId": project_id,
                         "title": row[1],
                         "description": row[2],
                         "deadline": row[3],
@@ -366,7 +369,8 @@ class ProjectRequestHandler(BaseHTTPRequestHandler):
                 200,
                 [
                     {
-                        "id": row[0],
+                        "edgeId": row[0],
+                        "projectId": project_id,
                         "source": row[1],
                         "dest": row[2],
                         "edgeType": row[3],
@@ -404,8 +408,8 @@ class ProjectRequestHandler(BaseHTTPRequestHandler):
                 200,
                 [
                     {
-                        "id": row[0],
-                        "user": row[1],
+                        "commentId": row[0],
+                        "userId": row[1],
                         "comment": row[2],
                     }
                     for row in rows
@@ -482,7 +486,7 @@ class ProjectRequestHandler(BaseHTTPRequestHandler):
                     return
             self.send_json(
                 200,
-                {"id": node_id, "projectId": project_id, "x": payload.get("x"), "y": payload.get("y")},
+                {"nodeId": node_id, "projectId": project_id, "x": payload.get("x"), "y": payload.get("y")},
             )
         except sqlite3.Error:
             logging.exception(
@@ -523,7 +527,7 @@ class ProjectRequestHandler(BaseHTTPRequestHandler):
                 if result.rowcount == 0:
                     self.send_json(404, {"error": "Project not found"})
                     return
-            self.send_json(200, {"id": project_id, **payload})
+            self.send_json(200, {"projectId": project_id, **payload})
         except sqlite3.Error:
             logging.exception("Could not update project %s", project_id)
             self.send_json(500, {"error": "Could not update project"})
@@ -570,7 +574,7 @@ class ProjectRequestHandler(BaseHTTPRequestHandler):
                     return
             self.send_json(
                 200,
-                {"id": node_id, "projectId": project_id, **payload},
+                {"nodeId": node_id, "projectId": project_id, **payload},
             )
         except sqlite3.Error:
             logging.exception(
@@ -589,8 +593,8 @@ class ProjectRequestHandler(BaseHTTPRequestHandler):
             return
 
         allowed_fields = {
-            "sourceNode": "SourceNodeID",
-            "targetNode": "TargetNodeID",
+            "source": "SourceNodeID",
+            "dest": "TargetNodeID",
             "edgeType": "EdgeType"
         }
 
@@ -617,7 +621,7 @@ class ProjectRequestHandler(BaseHTTPRequestHandler):
                     return
             self.send_json(
                 200,
-                {"id": edge_id, "projectId": project_id, **payload},
+                {"edgeId": edge_id, "projectId": project_id, **payload},
             )
         except sqlite3.Error:
             logging.exception(
@@ -648,7 +652,7 @@ class ProjectRequestHandler(BaseHTTPRequestHandler):
             self.send_json(
                 200,
                 {
-                    "id": comment_id,
+                    "commentId": comment_id,
                     "projectId": project_id,
                     "nodeId": node_id,
                     "comment": payload.get("comment"),
@@ -710,15 +714,16 @@ class ProjectRequestHandler(BaseHTTPRequestHandler):
                     (
                         title,
                         description,
+                        # Currently uses mock owner
                         1
                     ),
                 )
 
                 project = {
-                    "id": cursor.lastrowid,
+                    "projectId": cursor.lastrowid,
                     "title": title,
                     "description": description,
-                    "owner": 1
+                    "ownerId": 1
                 }
             self.send_json(201, project)
         except sqlite3.Error:
@@ -773,8 +778,10 @@ class ProjectRequestHandler(BaseHTTPRequestHandler):
                     (comment_id, node_id, project_id, user_id, comment_text),
                 )
                 comment = {
-                    "id": comment_id,
-                    "user": user_id,
+                    "commentId": comment_id,
+                    "projectId": project_id,
+                    "nodeId": node_id,
+                    "userId": user_id,
                     "comment": comment_text,
                 }
             self.send_json(201, comment)
@@ -856,12 +863,15 @@ class ProjectRequestHandler(BaseHTTPRequestHandler):
                 )
 
                 node = {
-                    "id": node_id,
+                    "nodeId": node_id,
+                    "projectId": project_id,
                     "title": title,
                     "description": description,
                     "deadline": deadline,
                     "nodeType": node_type,
                     "progress": progress,
+                    "x": x,
+                    "y": y
                 }
             self.send_json(201, node)
         except sqlite3.Error:
@@ -922,7 +932,7 @@ class ProjectRequestHandler(BaseHTTPRequestHandler):
                 )
 
                 edge = {
-                    "id": edge_id,
+                    "edgeId": edge_id,
                     "projectId": project_id,
                     "source": source_node,
                     "dest": target_node,
