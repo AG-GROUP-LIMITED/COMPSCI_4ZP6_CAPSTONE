@@ -9,7 +9,6 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 DATABASE = Path(__file__).with_name("projects.db")
-DEMO_OWNER_EMAIL = "test@test.mcmaster"
 
 SCHEMA = (
     'CREATE TABLE IF NOT EXISTS "User" ('
@@ -74,6 +73,116 @@ SCHEMA = (
 )
 
 
+def insert_demo_data(connection):
+    demo_project = connection.execute(
+        'SELECT ProjectID FROM "Project" WHERE Title = ?',
+        ("GRID Demo Project",),
+    ).fetchone()
+    if demo_project is not None:
+        return
+
+    users = (
+        ("Kate Brown", "kate@example.com", "mock_hash_kate"),
+        ("Bob Hamilton", "bob@example.com", "mock_hash_bob"),
+        ("Charlie Smith", "charlie@example.com", "mock_hash_charlie"),
+        ("Emma Jones", "emma@example.com", "mock_hash_emma"),
+    )
+    connection.executemany(
+        'INSERT OR IGNORE INTO "User" (Name, Email, PasswordHash) '
+        "VALUES (?, ?, ?)",
+        users,
+    )
+    user_ids = {
+        email: connection.execute(
+            'SELECT UserID FROM "User" WHERE Email = ?',
+            (email,),
+        ).fetchone()[0]
+        for _, email, _ in users
+    }
+
+    project_id = connection.execute(
+        'INSERT INTO "Project" (OwnerID, Title, Description) '
+        "VALUES (?, ?, ?)",
+        (
+            user_ids["kate@example.com"],
+            "GRID Demo Project",
+            "GRID demo project test data.",
+        ),
+    ).lastrowid
+    connection.executemany(
+        'INSERT INTO "ProjectCollaborator" (ProjectID, UserID) VALUES (?, ?)',
+        [(project_id, user_id) for user_id in user_ids.values()],
+    )
+
+    nodes = (
+        (1, "Project Setup", "Set up the initial project structure and repository.", "2026-12-01", "Task", "Finished", "kate@example.com", 100.0, 150.0),
+        (2, "Design Database", "Create the initial database schema.", "2026-12-05", "Task", "In Progress", "bob@example.com", 400.0, 50.0),
+        (3, "Design Frontend UI", "Create the initial graph visualization layout.", "2026-12-08", "Task", "In Progress", "charlie@example.com", 400.0, 350.0),
+        (4, "Build Backend API", "Create basic backend endpoints.", "2026-12-12", "Task", "Not Started", "bob@example.com", 700.0, 50.0),
+        (5, "Implement Graph View", "Display project nodes and relationships in the frontend graph.", "2026-12-15", "Task", "Not Started", "charlie@example.com", 700.0, 350.0),
+        (6, "Integration Testing", "Test the basic workflow after frontend and backend integration.", "2026-12-19", "Test", "Not Started", "emma@example.com", 1000.0, 50.0),
+        (7, "Requirements Document", "Maintain project requirements and supporting documentation.", "2026-12-10", "Document", "In Progress", "kate@example.com", 100.0, 550.0),
+        (8, "Prepare Presentation", "Prepare the project demo presentation.", "2026-12-22", "Task", "Not Started", "kate@example.com", 100.0, 700.0),
+    )
+    connection.executemany(
+        'INSERT INTO "Node" '
+        "(NodeID, ProjectID, Title, Description, Deadline, NodeType, Progress, "
+        "AssigneeID, x, y) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        [
+            (
+                node_id,
+                project_id,
+                title,
+                description,
+                deadline,
+                node_type,
+                progress,
+                user_ids[assignee_email],
+                x,
+                y,
+            )
+            for (
+                node_id,
+                title,
+                description,
+                deadline,
+                node_type,
+                progress,
+                assignee_email,
+                x,
+                y,
+            ) in nodes
+        ],
+    )
+
+    edges = (
+        (1, 1, 2, "ParentOf"),
+        (2, 1, 3, "ParentOf"),
+        (3, 4, 7, "FileReference"),
+        (4, 5, 7, "FileReference"),
+    )
+    connection.executemany(
+        'INSERT INTO "Edge" '
+        "(EdgeID, ProjectID, SourceNodeID, TargetNodeID, EdgeType) "
+        "VALUES (?, ?, ?, ?, ?)",
+        [(edge_id, project_id, source_id, target_id, edge_type) for edge_id, source_id, target_id, edge_type in edges],
+    )
+
+    comments = (
+        (1, 1, "kate@example.com", "Initial project setup has been completed."),
+        (2, 2, "bob@example.com", "Started working on the database design."),
+        (3, 3, "charlie@example.com", "Created the first rough UI layout."),
+    )
+    connection.executemany(
+        'INSERT INTO "Comments" (CommentID, NodeID, ProjectID, UserID, Comment) '
+        "VALUES (?, ?, ?, ?, ?)",
+        [
+            (comment_id, node_id, project_id, user_ids[email], comment)
+            for comment_id, node_id, email, comment in comments
+        ],
+    )
+
+
 @contextmanager
 def connect_database():
     connection = sqlite3.connect(DATABASE)
@@ -90,14 +199,7 @@ def initialize_database():
         for statement in SCHEMA:
             connection.execute(statement)
 
-        connection.execute(
-            'INSERT OR IGNORE INTO "User" (Name, Email, PasswordHash) '
-            "VALUES (?, ?, ?)",
-            ("Local Demo Owner", DEMO_OWNER_EMAIL, "test hash"),
-        )
-        owner_id = connection.execute(
-            'SELECT UserID FROM "User" WHERE Email = ?', (DEMO_OWNER_EMAIL,)
-        ).fetchone()[0]
+        insert_demo_data(connection)
 
 class ProjectRequestHandler(BaseHTTPRequestHandler):
     def send_json(self, status_code, data):
