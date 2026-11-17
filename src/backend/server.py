@@ -110,50 +110,51 @@ class ProjectRequestHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         path = urlsplit(self.path).path
-        if path != "/api/projects":
-            match = re.fullmatch(
-                r"/api/projects/([1-9][0-9]*)/nodes/([1-9][0-9]*)/comments",
-                path,
-            )
-            if match:
-                self.get_comments(int(match.group(1)), int(match.group(2)))
-                return
-            match = re.fullmatch(r"/api/projects/([1-9][0-9]*)/edges", path)
-            if match:
-                self.get_edges(int(match.group(1)))
-                return
-            match = re.fullmatch(r"/api/projects/([1-9][0-9]*)/nodes", path)
-            if match:
-                self.get_nodes(int(match.group(1)))
-                return
-            match = re.fullmatch(r"/api/projects/([1-9][0-9]*)", path)
-            if match:
-                self.get_project(int(match.group(1)))
-                return
-            self.send_json(404, {"error": "Not found"})
-            return
+        if path == "/api/projects":
+            try:
+                with connect_database() as connection:
+                    rows = connection.execute(
+                        'SELECT ProjectID, Title, Description, Created '
+                        'FROM "Project" ORDER BY ProjectID'
+                    ).fetchall()
+                self.send_json(
+                    200, 
+                    [
+                        {
+                            "id": row[0], 
+                            "title": row[1], 
+                            "description": row[2],
+                            "created": row[3],
+                        }
+                        for row in rows
+                    ]
+                )
+            except sqlite3.Error:
+                logging.exception("Could not load projects")
+                self.send_json(500, {"error": "Could not load projects"})
 
-        try:
-            with connect_database() as connection:
-                rows = connection.execute(
-                    'SELECT ProjectID, Title, Description, Created '
-                    'FROM "Project" ORDER BY ProjectID'
-                ).fetchall()
-            self.send_json(
-                200, 
-                [
-                    {
-                        "id": row[0], 
-                        "title": row[1], 
-                        "description": row[2],
-                        "created": row[3],
-                    }
-                    for row in rows
-                ]
-            )
-        except sqlite3.Error:
-            logging.exception("Could not load projects")
-            self.send_json(500, {"error": "Could not load projects"})
+        match = re.fullmatch(
+            r"/api/projects/([1-9][0-9]*)/nodes/([1-9][0-9]*)/comments",
+            path,
+        )
+        if match:
+            self.get_comments(int(match.group(1)), int(match.group(2)))
+            return
+        match = re.fullmatch(r"/api/projects/([1-9][0-9]*)/edges", path)
+        if match:
+            self.get_edges(int(match.group(1)))
+            return
+        match = re.fullmatch(r"/api/projects/([1-9][0-9]*)/nodes", path)
+        if match:
+            self.get_nodes(int(match.group(1)))
+            return
+        match = re.fullmatch(r"/api/projects/([1-9][0-9]*)", path)
+        if match:
+            self.get_project(int(match.group(1)))
+            return
+        self.send_json(404, {"error": "Not found"})
+        return
+        
 
     def get_payload(self):
         try:
