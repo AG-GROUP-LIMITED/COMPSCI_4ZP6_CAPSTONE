@@ -140,18 +140,31 @@ class ProjectRequestHandler(BaseHTTPRequestHandler):
         if match:
             self.get_comments(int(match.group(1)), int(match.group(2)))
             return
-        match = re.fullmatch(r"/api/projects/([1-9][0-9]*)/edges", path)
+        
+        match = re.fullmatch(
+            r"/api/projects/([1-9][0-9]*)/edges", 
+            path
+        )
         if match:
             self.get_edges(int(match.group(1)))
             return
-        match = re.fullmatch(r"/api/projects/([1-9][0-9]*)/nodes", path)
+        
+        match = re.fullmatch(
+            r"/api/projects/([1-9][0-9]*)/nodes", 
+            path
+        )
         if match:
             self.get_nodes(int(match.group(1)))
             return
-        match = re.fullmatch(r"/api/projects/([1-9][0-9]*)", path)
+        
+        match = re.fullmatch(
+            r"/api/projects/([1-9][0-9]*)", 
+            path
+        )
         if match:
             self.get_project(int(match.group(1)))
             return
+        
         self.send_json(404, {"error": "Not found"})
         return
         
@@ -298,6 +311,254 @@ class ProjectRequestHandler(BaseHTTPRequestHandler):
             logging.exception("Could not load comments for project %s node %s", project_id, node_id)
             self.send_json(500, {"error": "Could not load comments"})
 
+
+    def do_PUT(self):
+        path = urlsplit(self.path).path
+        match = re.fullmatch(
+            r"/api/projects/([1-9][0-9]*)/nodes/([1-9][0-9]*)/position",
+            path,
+        )
+        if match:
+            self.update_node_position(int(match.group(1)), int(match.group(2)))
+            return
+
+        match = re.fullmatch(r"/api/projects/([1-9][0-9]*)", path)
+        if match:
+            self.update_project(int(match.group(1)))
+            return
+
+        match = re.fullmatch(
+            r"/api/projects/([1-9][0-9]*)/nodes/([1-9][0-9]*)",
+            path,
+        )
+        if match:
+            self.update_node(int(match.group(1)), int(match.group(2)))
+            return
+
+        match = re.fullmatch(
+            r"/api/projects/([1-9][0-9]*)/edges/([1-9][0-9]*)",
+            path,
+        )
+        if match:
+            self.update_edge(int(match.group(1)), int(match.group(2)))
+            return
+
+        match = re.fullmatch(
+            r"/api/projects/([1-9][0-9]*)/nodes/([1-9][0-9]*)/comments/([1-9][0-9]*)",
+            path,
+        )
+        if match:
+            self.update_comment(
+                int(match.group(1)),
+                int(match.group(2)),
+                int(match.group(3)),
+            )
+            return
+
+        self.send_json(404, {"error": "Not found"})
+
+    def update_node_position(self, project_id, node_id):
+        payload = self.get_payload()
+        if payload is None:
+            return
+        if set(payload) != {"x", "y"}:
+            self.send_json(400, {"error": "Both x and y positions are required"})
+            return
+
+        try:
+            with connect_database() as connection:
+                result = connection.execute(
+                    'UPDATE "Node" SET x = ?, y = ?, '
+                    "LastUpdated = CURRENT_TIMESTAMP "
+                    "WHERE ProjectID = ? AND NodeID = ?",
+                    (payload.get("x"), payload.get("y"), project_id, node_id),
+                )
+                if result.rowcount == 0:
+                    self.send_json(404, {"error": "Node not found"})
+                    return
+            self.send_json(
+                200,
+                {"id": node_id, "projectId": project_id, "x": payload.get("x"), "y": payload.get("y")},
+            )
+        except sqlite3.Error:
+            logging.exception(
+                "Could not update position for project %s node %s",
+                project_id,
+                node_id,
+            )
+            self.send_json(500, {"error": "Could not update node position"})
+
+    def update_project(self, project_id):
+        payload = self.get_payload()
+        if payload is None:
+            return
+        if not payload:
+            self.send_json(400, {"error": "Provide at least one field to update"})
+            return
+
+        allowed_fields = {"title": "Title", "description": "Description"}
+
+        assignments = []
+        values = []
+        for field, value in payload.items():
+            if field not in allowed_fields.keys():
+                self.send_json(
+                    400,
+                    {"error": f"Field '{field}' is not allowed to be updated or doesn't exist"},
+                )
+                return
+            assignments.append(f"{allowed_fields[field]} = ?")
+            values.append(value)
+        try:
+            with connect_database() as connection:
+                result = connection.execute(
+                    f'UPDATE "Project" SET {", ".join(assignments)} '
+                    "WHERE ProjectID = ?",
+                    (*values, project_id),
+                )
+                if result.rowcount == 0:
+                    self.send_json(404, {"error": "Project not found"})
+                    return
+            self.send_json(200, {"id": project_id, **payload})
+        except sqlite3.Error:
+            logging.exception("Could not update project %s", project_id)
+            self.send_json(500, {"error": "Could not update project"})
+
+    def update_node(self, project_id, node_id):
+        payload = self.get_payload()
+        if payload is None:
+            return
+        if not payload:
+            self.send_json(400, {"error": "Provide at least one field to update"})
+            return
+
+        allowed_fields = {
+            "title": "Title",
+            "description": "Description",
+            "deadline": "Deadline",
+            "nodeType": "NodeType",
+            "progress": "Progress",
+            "assigneeId": "AssigneeID"
+        }
+
+        assignments = []
+        values = []
+        for field, value in payload.items():
+            if field not in allowed_fields.keys():
+                self.send_json(
+                    400,
+                    {"error": f"Field '{field}' is not allowed to be updated or doesn't exist"},
+                )
+                return
+            assignments.append(f"{allowed_fields[field]} = ?")
+            values.append(value)
+        assignments.append("LastUpdated = CURRENT_TIMESTAMP")
+
+        try:
+            with connect_database() as connection:
+                result = connection.execute(
+                    f'UPDATE "Node" SET {", ".join(assignments)} '
+                    "WHERE ProjectID = ? AND NodeID = ?",
+                    (*values, project_id, node_id),
+                )
+                if result.rowcount == 0:
+                    self.send_json(404, {"error": "Node not found"})
+                    return
+            self.send_json(
+                200,
+                {"id": node_id, "projectId": project_id, **payload},
+            )
+        except sqlite3.Error:
+            logging.exception(
+                "Could not update node %s in project %s",
+                node_id,
+                project_id,
+            )
+            self.send_json(500, {"error": "Could not update node"})
+
+    def update_edge(self, project_id, edge_id):
+        payload = self.get_payload()
+        if payload is None:
+            return
+        if not payload:
+            self.send_json(400, {"error": "Provide at least one field to update"})
+            return
+
+        allowed_fields = {
+            "sourceNode": "SourceNodeID",
+            "targetNode": "TargetNodeID",
+            "edgeType": "EdgeType"
+        }
+
+        assignments = []
+        values = []
+        for field, value in payload.items():
+            if field not in allowed_fields.keys():
+                self.send_json(
+                    400,
+                    {"error": f"Field '{field}' is not allowed to be updated or doesn't exist"},
+                )
+                return
+            assignments.append(f"{allowed_fields[field]} = ?")
+            values.append(value)
+        try:
+            with connect_database() as connection:
+                result = connection.execute(
+                    f'UPDATE "Edge" SET {", ".join(assignments)} '
+                    "WHERE ProjectID = ? AND EdgeID = ?",
+                    (*values, project_id, edge_id),
+                )
+                if result.rowcount == 0:
+                    self.send_json(404, {"error": "Edge not found"})
+                    return
+            self.send_json(
+                200,
+                {"id": edge_id, "projectId": project_id, **payload},
+            )
+        except sqlite3.Error:
+            logging.exception(
+                "Could not update edge %s in project %s",
+                edge_id,
+                project_id,
+            )
+            self.send_json(500, {"error": "Could not update edge"})
+
+    def update_comment(self, project_id, node_id, comment_id):
+        payload = self.get_payload()
+        if payload is None:
+            return
+        if set(payload) != {"comment"}:
+            self.send_json(400, {"error": "Only the comment field can be updated"})
+            return
+
+        try:
+            with connect_database() as connection:
+                result = connection.execute(
+                    'UPDATE "Comments" SET Comment = ? '
+                    "WHERE ProjectID = ? AND NodeID = ? AND CommentID = ?",
+                    (payload.get("comment"), project_id, node_id, comment_id),
+                )
+                if result.rowcount == 0:
+                    self.send_json(404, {"error": "Comment not found"})
+                    return
+            self.send_json(
+                200,
+                {
+                    "id": comment_id,
+                    "projectId": project_id,
+                    "nodeId": node_id,
+                    "comment": payload.get("comment"),
+                },
+            )
+        except sqlite3.Error:
+            logging.exception(
+                "Could not update comment %s for project %s node %s",
+                comment_id,
+                project_id,
+                node_id,
+            )
+            self.send_json(500, {"error": "Could not update comment"})
+
     def do_POST(self):
         path = urlsplit(self.path).path
         if path == "/api/projects":
@@ -402,9 +663,10 @@ class ProjectRequestHandler(BaseHTTPRequestHandler):
                 ).fetchone()[0]
 
                 connection.execute(
-                    'INSERT INTO "Comments" (NodeID, ProjectID, UserID, Comment) '
-                    "VALUES (?, ?, ?, ?)",
-                    (node_id, project_id, user_id, comment_text),
+                    'INSERT INTO "Comments" '
+                    "(CommentID, NodeID, ProjectID, UserID, Comment) "
+                    "VALUES (?, ?, ?, ?, ?)",
+                    (comment_id, node_id, project_id, user_id, comment_text),
                 )
                 comment = {
                     "id": comment_id,
