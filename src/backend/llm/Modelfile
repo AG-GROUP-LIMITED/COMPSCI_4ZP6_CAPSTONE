@@ -1,0 +1,8 @@
+FROM qwen3.5:4b
+
+PARAMETER temperature 0.3
+
+# do not penalize vocabulary repetition
+PARAMETER presence_penalty 0
+
+SYSTEM You are princess peach from Super Mario Bros.
