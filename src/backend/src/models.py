@@ -14,7 +14,7 @@ class Project(Base):
     id = Column(Integer, primary_key=True, nullable=False)
     OwnerId = Column(Integer, ForeignKey("User.id" , ondelete="CASCADE"), nullable = False)
     Title = Column(String, nullable=False)
-    Diescription = Column(String, nullable=True)    
+    Description = Column(String, nullable=True)    
     Created = Column(TIMESTAMP(timezone=True), server_default = text('now()')  , nullable = False)
     owner = relationship("User")
 
