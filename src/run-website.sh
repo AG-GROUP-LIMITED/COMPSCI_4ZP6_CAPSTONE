@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd frontend ; npm run dev &
+cd frontend ; npm install ; npm run dev &
 npm_pid=$!
 python3 ../backend/server.py &
 backend_pid=$!
