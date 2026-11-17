@@ -25,7 +25,7 @@ export function NavLeft({children}: NavProps) {
 
 export function NavCenter({children}: NavProps) {
     return (
-        <div>
+        <div className="font-semibold">
             {children}
         </div>
     )

@@ -12,7 +12,7 @@ type CreateEdgeData = Omit<ProjectEdge, "id">;
 
 type Project = {
   id: number;
-  name: string;
+  title: string;
 };
 
 type ProjectNode = {
@@ -198,12 +198,12 @@ export function ProjectLayout() {
     }, [id]);
 
     useEffect(() => {
-      setPageTitle(project?.name ?? "");
+      setPageTitle(project?.title ?? "");
 
       return () => {
         setPageTitle("");
       };
-    }, [project?.name, setPageTitle])
+    }, [project?.title, setPageTitle])
 
     useEffect(() => {
       void refreshProject();
