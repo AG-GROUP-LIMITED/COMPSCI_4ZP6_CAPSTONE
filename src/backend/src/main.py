@@ -1,17 +1,17 @@
 from fastapi import FastAPI, Response, status, HTTPException, Depends
-from fastapi.params import Body
+# from fastapi.params import Body
 from typing import Optional, List
-import psycopg2
-from psycopg2.extras import RealDictCursor
-import time
+# import psycopg2
+# from psycopg2.extras import RealDictCursor
+# import time
 #Database definitions
 from sqlalchemy.orm import Session
-#from . import models,utils, schemas
-#from .database import engine, SessionLocal
+from . import models#,utils, schemas
+from .database import engine, SessionLocal
 #from .routers import post, user, auth
 #User
 
-#models.Base.metadata.create_all(bind=engine)    # Creates tables defined in models
+models.Base.metadata.create_all(bind=engine)    # Creates tables defined in models
 
 
 app = FastAPI()
