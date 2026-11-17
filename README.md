@@ -9,21 +9,16 @@
    sudo apt install -y nodejs npm
    ```
 
-2. Navigate to react source folder and build:
+2. Move to `src` and update script permissions:
    ```sh
-   cd /src
-   npm install
-   npm run build
-   ```
-3. Give permission to script:
-   ```sh
+   cd ./src
    chmod +x run-website.sh
    ```
-4. Run script:
+3. Run script:
    ```sh
    run-website.sh
    ```
-5. Website is now accessible at `127.0.0.1:8000` and API is open at `127.0.0.1:3000`
+4. Website is now accessible at `127.0.0.1:3000` and API is open at `127.0.0.1:8000`
 
 ## Accessing Database
 
