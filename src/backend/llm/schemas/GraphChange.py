@@ -1,5 +1,11 @@
+from enum import Enum
 from typing import Annotated, Literal
 from pydantic import BaseModel, Field
+
+class Confidence(Enum):
+    HIGH = "HIGH"
+    MED = "MED"
+    LOW = "LOW"
 
 
 class NodeChanges(BaseModel):
@@ -19,39 +25,44 @@ class EdgeChanges(BaseModel):
 class CreateNode(BaseModel):
     operation: Literal["create_node"]
     changes: NodeChanges
-    confidence: float = Field(ge=0.0, le=1.0)
+    confidence: Confidence
 
 
 class UpdateNode(BaseModel):
     operation: Literal["update_node"]
     node_id: int
     changes: NodeChanges
-    confidence: float = Field(ge=0.0, le=1.0)
+    confidence: Confidence
 
 
 class DeleteNode(BaseModel):
     operation: Literal["delete_node"]
     node_id: int
-    confidence: float = Field(ge=0.0, le=1.0)
+    confidence: Confidence
 
 
 class CreateEdge(BaseModel):
     operation: Literal["create_edge"]
     changes: EdgeChanges
-    confidence: float = Field(ge=0.0, le=1.0)
+    confidence: Confidence
 
 
 class UpdateEdge(BaseModel):
     operation: Literal["update_edge"]
     edge_id: int
     changes: EdgeChanges
-    confidence: float = Field(ge=0.0, le=1.0)
+    confidence: Confidence
 
 
 class DeleteEdge(BaseModel):
     operation: Literal["delete_edge"]
     edge_id: int
-    confidence: float = Field(ge=0.0, le=1.0)
+    confidence: Confidence
+
+
+class Ambiguity(BaseModel):
+    ambiguous_instruction: str
+    clarification_needed: str
 
 
 GraphOperation = Annotated[
@@ -68,6 +79,7 @@ GraphOperation = Annotated[
 
 class GraphChange(BaseModel):
     operations: list[GraphOperation]
+    ambiguities: list[Ambiguity]
 
 
 # TODO: 
