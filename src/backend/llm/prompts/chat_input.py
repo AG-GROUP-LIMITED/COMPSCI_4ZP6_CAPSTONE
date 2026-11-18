@@ -36,12 +36,21 @@ Attributes:
 ## MODIFICATION RULES:
 1. Only propose changes supported by the user's input and existing graph context.
 2. Do not invent false dependencies or relationships.
-3. Only modify nodes/edges/attributes that need to change.
+3. Only propose modifications to nodes/edges/attributes that need to change.
 4. Never modify unique IDs.
 5. If the instruction is ambiguous, do not guess. Flag the ambiguity.
 
+## CONFIDENCE:
+- Assign each proposed modification a confidence score between 0.0 and 1.0, inclusive.
+- Confidence reflects how clearly the user's instruction supports your proposed operation.
+- Explicitly stated changes should receive high confidence.
+- Changes requiring interpretation/inference should receive lower confidence.
+- Never propose an operation when its underlying ambiguity prevents a reliable interpretation.
+
 ## OUTPUT:
-Return your proposed graph modifications exactly matching the required JSON output structure.
+- Return your proposed graph modifications exactly matching the required JSON output structure.
+- The proposed changes must contain only the attributes that are being modified
+- Do not include unmodified attributes in your proposed changes
 """
 
 # TODO: add a "ambiguity" graph operation
