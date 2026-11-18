@@ -1,21 +1,38 @@
-from ollama import chat
-from schemas.GraphState import GraphState
-from schemas.GraphChange import GraphChange
 from prompts.chat_input import SYSTEM_PROMPT
+from schemas.GraphChange import GraphChange
+from utils import get_graph_state, get_user_mapping
+
+import json
+
+from ollama import chat
 
 
 def main():
 
-    # graph_state = GraphState.model_validate_json(None) # TODO mock graph state
+    # Mock user input 
+    user_input = """
+        Kris is no longer working on the database migration, it is Jane now. 
+    """
+        # Also we need a new task to generate sample data.
 
-    # Get user_id : name mapping
+    graph_state = get_graph_state()
 
-    user_prompt = """
-        Kris is no longer working on the database migration, it is Hudson now. 
-        Also we need a task to generate sample data.
+    user_mapping = get_user_mapping()
+
+    user_prompt = f"""
+AVAILABLE USERS:
+{json.dumps(user_mapping, indent=2)}
+
+CURRENT GRAPH:
+{graph_state.model_dump_json(indent=2)}
+
+USER INPUT:
+{user_input}
     """
 
-    user_prompt = "The graph is empty. Create a task node called Sample and assign it to user 123."
+    print("user prompt is:")
+    print(user_prompt)
+
 
     response = chat(
         model='capstone-model',
@@ -31,16 +48,16 @@ def main():
         }
     )
 
+    print("model response is:")
     print(response)
-
-    # graph = GraphState.model_validate_json(response.message.content)
-    # print(graph)
 
 
 if __name__ == "__main__":
     main()
 
 
+
+# EXAMPLES:
 
 # user_prompt = "The graph is empty. Create a task node called Sample and assign it to user 123."
 
@@ -59,3 +76,25 @@ if __name__ == "__main__":
 #     }
 #   ]
 # }
+
+
+
+user_input = "Kris is no longer working on the database migration, it is Jane now. "
+
+
+# model response is:
+content={
+  "operations": [
+    {
+      "operation": "update_node",
+      "node_id": 1,
+      "changes": {
+        "type": "task",
+        "title": "Migrate Database",
+        "description": "Move the existing database from MSSQL to Snowflake.",
+        "progress": "in-progress",
+        "assignee_id": 456
+      }
+    }
+  ]
+}
