@@ -11,7 +11,7 @@ def main():
 
     # Mock user input 
     user_input = """
-        Kris is no longer working on the database migration, it is Jane now. 
+        Jane is working on the Snowflake task. 
     """
         # Also we need a new task to generate sample data.
 
@@ -35,21 +35,24 @@ USER INPUT:
 
 
     response = chat(
-        model='capstone-model',
+        model='qwen3.5:9b',
         messages=[
             {'role': 'system', 'content': SYSTEM_PROMPT},
             {'role': 'user', 'content': user_prompt}
         ],
-        think=False,
-        format=GraphChange.model_json_schema(),
+        think=True,
+        stream=True,
         options={
-            "temperature": 0.2,
-            "presence_penalty": 0
-        }
+            "temperature": 0.1,
+            "presence_penalty": 0,
+            "num_ctx": 16384,  # 4096 default
+        },
+        format=GraphChange.model_json_schema()
     )
 
     print("model response is:")
-    print(response)
+    for chunk in response:
+        print(chunk.message.content or "", end="", flush=True)
 
 
 if __name__ == "__main__":
@@ -98,3 +101,60 @@ content={
     }
   ]
 }
+
+
+#  added 'confidence' estimate and made the "changes" object strictly the delta
+
+user_input = "Kris is no longer working on the database migration, it is Jane now. "
+
+content={
+  "operations": [
+    {
+      "operation": "update_node",
+      "node_id": 1,
+      "changes": {
+        "assignee_id": 456
+      },
+      "confidence": 0.95
+    }
+  ]
+}
+
+
+
+#  WITH THINKING:
+#  (context: there are two Snowflake tasks, so this should be ambiguous)
+user_input = "Jane is working on the Snowflake task."
+
+content={
+  "operations": [
+    {
+      "operation": "update_node",
+      "node_id": 1,
+      "changes": {
+        "assignee_id": 456
+      },
+      "confidence": "LOW"
+    },
+    {
+      "operation": "update_node",
+      "node_id": 2,
+      "changes": {
+        "assignee_id": 456
+      },
+      "confidence": "LOW"
+    }
+  ]
+}
+
+
+
+#  **BEST SO FAR**: WITH THINKING AND QWEN3.5:9B AND  AMBIGUITY INSTRUCTIONS:
+#  (context: there are two Snowflake tasks, so this should be ambiguous)
+user_input = "Jane is working on the Snowflake task."
+
+content={
+    "operations": [], 
+    "ambiguities": [
+        {"ambiguous_instruction": "Jane is working on the Snowflake task", 
+         "clarification_needed": "Which Snowflake task should Jane be assigned to? There are two Snowflake-related tasks: \'Migrate to Snowflake Database\' (node 1) and \'Migrate to Snowflake database\' (node 2)."}]}
