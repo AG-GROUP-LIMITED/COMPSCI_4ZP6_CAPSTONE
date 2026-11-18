@@ -1,0 +1,35 @@
+{
+  "title": "My Project",
+  "description": "My awesome project for my awesome team",
+  "collaborators": [
+    "123",
+    "456"
+  ],
+  "nodes": [
+    {
+      "node_id": 1,
+      "type": "task",
+      "title": "Migrate Database",
+      "description": "Move the existing database from MSSQL to Snowflake.",
+      "progress": "in-progress",
+      "assignee_id": 123
+    },
+    {
+      "node_id": 2,
+      "type": "task",
+      "title": "Repoint Python Job",
+      "description": "Update the new job to use the migrated Snowflake database.",
+      "progress": "backlog",
+      "assignee_id": 456
+    }
+  ],
+  "edges": [
+    {
+      "edge_id": 1,
+      "source_node_id": 1,
+      "target_node_id": 2,
+      "edge_type": "dependency"
+    }
+  ],
+  "comments": []
+}
