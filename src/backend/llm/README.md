@@ -1,32 +1,42 @@
-<!-- To create the model locally -->
-ollama create capstone-model -f <path to ./Modelfile>
-ollama list
+# LLM Proof-of-Concept
 
-<!-- To run locally via CLI -->
-ollama run capstone-model --think=false
+## How to run locally
+
+1. Download a model of your choice
+    - Best reasoning, needs ~5.5gb install:
+        - `ollama pull qwen3.5:9b`
+    - Moderate reasoning, needs ~2.5gb install:
+        - `ollama pull qwen3.5:4b`
+
+    - Verify with `ollama list`, you should see the downloaded model
+
+2. Serve the model (on port 11434): `ollama serve`
+    - http://localhost:11434/ should show `Ollama is running`
+    - http://localhost:11434/api/tags should show your model
 
 
-<!-- 
-Design Rationale 
+3. Install the required python packages from `../llm/requirements.txt`
+    - `pip install -r requirements.txt`
+
+4. Run `llm.py` to run the POC
+
+
+## Design choices
 
 - Single Agent vs Multi Agent/Skills/Orchestration
     - for this POC, we use a single agent architecture
-    - the task at hand is well-defined, sequential, state-dependent, lower complexity
+    - the task at hand is well-defined, sequential, state-dependent, low complexity
     - multi-agent would increase cost while enabling a distributed/parallel workload but that is not necessary for this use case
     - for this POC, simplicity, speed, low cost, and a clearly defined workflow is higher priority
 
 
-Workflow:
+## Intended workflow
 
-Receive user input from frontend -> backend
-
-Sanitize user input, check prompt injection, etc.
-
-Fetch graph state from DB
-
-Pass sanitized user prompt + graph state to LLM (along with system prompt)
-
-LLM responds in expected format; Pydantic validates the response format against GraphChange schema
-
-
- -->
+1. Receive user natural language input from frontend -> backend
+2. Sanitize user input, check prompt injection, etc.
+3. Fetch graph state as JSON from DB via api
+4. Pass sanitized user prompt + system prompt + graph state to LLM
+5. LLM responds in deterministic format validated with Pydantic
+    - proposes sequential change operations to the graph
+    - POC stops here; the rest is frontend/backend, not concerned with LLM
+6. LLM response is served on frontend in "staging" area for user to review
