@@ -10,10 +10,11 @@ from ollama import chat
 def main():
 
     # Mock user input 
-    user_input = """
-        Jane is working on the Snowflake task. 
-    """
-        # Also we need a new task to generate sample data.
+    easy_case_1 = "Jane is now repointing Python jobs to Snowflake, not Kris"
+    easy_node_delete = "We no longer need to migrate data to Snowflake, delete the task"
+    med_case_1 = "We no longer need to migrate data to Snowflake."
+    med_case_2 = "Jane needs to consult with the business before jobs can be repointed to Snowflake"
+    ambiguous_case = "Jane is working on the Snowflake task."
 
     graph_state = get_graph_state()
 
@@ -27,12 +28,10 @@ CURRENT GRAPH:
 {graph_state.model_dump_json(indent=2)}
 
 USER INPUT:
-{user_input}
+{med_case_2}
     """
 
-    print("user prompt is:")
-    print(user_prompt)
-
+    print("user_prompt =", med_case_2)
 
     response = chat(
         model='qwen3.5:9b',
@@ -50,7 +49,7 @@ USER INPUT:
         format=GraphChange.model_json_schema()
     )
 
-    print("model response is:")
+    print("response = ", end="")
     for chunk in response:
         print(chunk.message.content or "", end="", flush=True)
 
@@ -62,99 +61,85 @@ if __name__ == "__main__":
 
 # EXAMPLES:
 
-# user_prompt = "The graph is empty. Create a task node called Sample and assign it to user 123."
-
-# output =
-# content={
-#   "operations": [
-#     {
-#       "operation": "create_node",
-#       "changes": {
-#         "type": "task",
-#         "title": "Sample",
-#         "description": "",
-#         "progress": "backlog",
-#         "assignee_id": 123
-#       }
-#     }
-#   ]
-# }
-
-
-
-user_input = "Kris is no longer working on the database migration, it is Jane now. "
-
-
-# model response is:
-content={
+# straight-forward node update (change assignee)
+user_prompt = "Jane is now repointing Python jobs to Snowflake, not Kris"
+response = {
   "operations": [
-    {
-      "operation": "update_node",
-      "node_id": 1,
-      "changes": {
-        "type": "task",
-        "title": "Migrate Database",
-        "description": "Move the existing database from MSSQL to Snowflake.",
-        "progress": "in-progress",
-        "assignee_id": 456
-      }
-    }
-  ]
-}
-
-
-#  added 'confidence' estimate and made the "changes" object strictly the delta
-
-user_input = "Kris is no longer working on the database migration, it is Jane now. "
-
-content={
-  "operations": [
-    {
-      "operation": "update_node",
-      "node_id": 1,
-      "changes": {
-        "assignee_id": 456
-      },
-      "confidence": 0.95
-    }
-  ]
-}
-
-
-
-#  WITH THINKING:
-#  (context: there are two Snowflake tasks, so this should be ambiguous)
-user_input = "Jane is working on the Snowflake task."
-
-content={
-  "operations": [
-    {
-      "operation": "update_node",
-      "node_id": 1,
-      "changes": {
-        "assignee_id": 456
-      },
-      "confidence": "LOW"
-    },
     {
       "operation": "update_node",
       "node_id": 2,
       "changes": {
         "assignee_id": 456
       },
-      "confidence": "LOW"
+      "confidence": "HIGH"
+    }
+  ],
+  "ambiguities": []
+}
+
+# straight-forward node deletion
+user_prompt = "We no longer need to migrate data to Snowflake, delete the task"
+response = {
+  "operations": [
+    {
+      "operation": "delete_node",
+      "node_id": 1,
+      "confidence": "HIGH"
+    },
+    {
+      "operation": "delete_edge",
+      "edge_id": 1,
+      "confidence": "HIGH"
+    }
+  ],
+  "ambiguities": []
+}
+
+# multi-step node and edge creation
+user_prompt = "Jane needs to consult with the business before jobs can be repointed to Snowflake"
+response = {
+  "operations": [
+    {
+      "operation": "create_node",
+      "changes": {
+        "type": "task",
+        "title": "Consult with business",
+        "description": "Jane needs to consult with the business before jobs can be repointed to Snowflake",
+        "progress": "backlog",
+        "assignee_id": 456
+      }
+    ,
+      "confidence": "HIGH"
+    },
+    {
+      "operation": "create_edge",
+      "changes": {
+        "source_node_id": 2,
+        "target_node_id": 3,
+        "edge_type": "depends_on"
+      },
+      "confidence": "HIGH"
     }
   ]
+,
+  "ambiguities": []
 }
 
 
+# ambiguous node deletion
+user_prompt = "We no longer need to migrate data to Snowflake."
+response = {"operations": [], 
+            "ambiguities": [
+                {"ambiguous_instruction": "We no longer need to migrate data to Snowflake", 
+                 "clarification_needed": "Should the 'Migrate data to Snowflake' task be deleted, marked as complete, or cancelled?"}]}
 
-#  **BEST SO FAR**: WITH THINKING AND QWEN3.5:9B AND  AMBIGUITY INSTRUCTIONS:
-#  (context: there are two Snowflake tasks, so this should be ambiguous)
-user_input = "Jane is working on the Snowflake task."
+# ambiguous node reference (there are two snowflake tasks)
+user_prompt = "Jane is working on the Snowflake task now."
+response = {"operations": [], 
+            "ambiguities": [
+                {"ambiguous_instruction": "the Snowflake task", 
+                 "clarification_needed": "Which Snowflake task do you mean? There are two tasks related to Snowflake: 'Migrate data to Snowflake' (node 1) and 'Repoint Python jobs to Snowflake' (node 2)."}
+            ]}
 
-content={
-    "operations": [], 
-    "ambiguities": [
-        {"ambiguous_instruction": "Jane is working on the Snowflake task", 
-         "clarification_needed": "Which Snowflake task should Jane be assigned to? There are two Snowflake-related tasks: \'Migrate to Snowflake Database\' (node 1) and \'Migrate to Snowflake database\' (node 2)."}]}
+
+# TODO: resolve the "temp ID" issue for proposed new nodes

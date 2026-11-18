@@ -9,26 +9,26 @@
     {
       "node_id": 1,
       "type": "task",
-      "title": "Migrate Database",
+      "title": "Migrate data to Snowflake",
       "description": "Move the existing database from MSSQL to Snowflake.",
-      "progress": "in-progress",
+      "progress": "backlog",
       "assignee_id": 123
     },
     {
       "node_id": 2,
       "type": "task",
-      "title": "Repoint Python Job",
+      "title": "Repoint Python jobs to Snowflake",
       "description": "Update the new job to use the migrated Snowflake database.",
       "progress": "backlog",
-      "assignee_id": 456
+      "assignee_id": 123
     }
   ],
   "edges": [
     {
       "edge_id": 1,
-      "source_node_id": 1,
-      "target_node_id": 2,
-      "edge_type": "dependency"
+      "source_node_id": 2,
+      "target_node_id": 1,
+      "edge_type": "depends_on"
     }
   ],
   "comments": []
