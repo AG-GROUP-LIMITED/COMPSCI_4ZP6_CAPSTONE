@@ -6,22 +6,29 @@
     - https://ollama.com/download
 
 2. Download a model of your choice
-    - Best reasoning, needs ~5.5gb install:
-        - `ollama pull qwen3.5:9b`
+    - Recommended: Best reasoning, needs ~5.5gb install:
+
+          ollama pull qwen3.5:9b
     - Moderate reasoning, needs ~2.5gb install:
-        - `ollama pull qwen3.5:4b`
 
-    - Verify with `ollama list`, you should see the downloaded model
+          ollama pull qwen3.5:4b
 
-3. Serve the model (on port 11434): `ollama serve`
+3. Verify your downloaded succeeded
+
+       ollama list
+
+3. Serve the model (on port 11434):
+
+       ollama serve
     - http://localhost:11434/ should show `Ollama is running`
     - http://localhost:11434/api/tags should show your model
 
 
-4. Install the required python packages from `../llm/requirements.txt`
-    - `pip install -r requirements.txt`
+5. Install the required python packages from `../llm/requirements.txt`
 
-5. Run `llm.py` to run the POC
+       pip install -r requirements.txt
+
+6. Run `llm.py` to run the POC
 
 
 ## Design choices
