@@ -2,7 +2,10 @@
 
 ## How to run locally
 
-1. Download a model of your choice
+1. Download Ollama
+    - https://ollama.com/download
+
+2. Download a model of your choice
     - Best reasoning, needs ~5.5gb install:
         - `ollama pull qwen3.5:9b`
     - Moderate reasoning, needs ~2.5gb install:
@@ -10,15 +13,15 @@
 
     - Verify with `ollama list`, you should see the downloaded model
 
-2. Serve the model (on port 11434): `ollama serve`
+3. Serve the model (on port 11434): `ollama serve`
     - http://localhost:11434/ should show `Ollama is running`
     - http://localhost:11434/api/tags should show your model
 
 
-3. Install the required python packages from `../llm/requirements.txt`
+4. Install the required python packages from `../llm/requirements.txt`
     - `pip install -r requirements.txt`
 
-4. Run `llm.py` to run the POC
+5. Run `llm.py` to run the POC
 
 
 ## Design choices
