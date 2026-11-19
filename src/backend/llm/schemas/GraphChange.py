@@ -8,6 +8,9 @@ class Confidence(Enum):
     LOW = "LOW"
 
 
+# TODO: add progress enum
+
+
 class NodeChanges(BaseModel):
     type: str | None = None
     title: str | None = None
@@ -66,8 +69,8 @@ class Ambiguity(BaseModel):
 
 
 GraphOperation = Annotated[
-    UpdateNode 
-    | CreateNode 
+    CreateNode 
+    | UpdateNode 
     | DeleteNode 
     | CreateEdge 
     | UpdateEdge 
