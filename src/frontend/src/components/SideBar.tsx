@@ -64,9 +64,9 @@ export function SideBar({sidebarItems, dropDownItems}: SideBarProps) {
     
     return (
         <>
-        <aside className={`flex flex-col transition-all duration-75 ease-out`} style={{width: `${expanded? (width / 16) : 3}rem`}}>
+        <aside className={`flex flex-col transition-all duration-75 ease-out bg-gray-50`} style={{width: `${expanded? (width / 16) : 3}rem`}}>
             <div className={`flex h-8 md:h-12 p-2 border-t-gray-300 ${expanded? "justify-end" : "justify-center"}`}>
-                <button onClick={()  => setExpanded((curr) => !curr)} className="rounded-md hover:bg-gray-100 transition-colors p-1.5 items-center">
+                <button onClick={()  => setExpanded((curr) => !curr)} className="rounded-md hover:bg-orange-100 transition-colors p-1.5 items-center">
                     {expanded ? <ChevronFirst/> : <ChevronLast/>}
                 </button>
             </div>
@@ -84,7 +84,7 @@ export function SideBar({sidebarItems, dropDownItems}: SideBarProps) {
         </aside>
 
         {/* Sidebar resize handle */}
-        <div className={`w-1 select-none ${expanded ? "cursor-col-resize" : ""} border-r border-r-gray-300`} onMouseDown={() => {isResized.current = true;}}> </div>
+        <div className={`w-1 bg-gray-50 select-none ${expanded ? "cursor-col-resize" : ""} border-r border-r-gray-400`} onMouseDown={() => {isResized.current = true;}}> </div>
         </>
     );
 };
@@ -92,7 +92,7 @@ export function SideBar({sidebarItems, dropDownItems}: SideBarProps) {
 export function SideButton({icon: Icon, onclick, children}: SideButtonProps) {
     const {expanded} = useContext(SidebarContext)
     return (
-        <button className="w-full h-10 border border-gray-300 rounded-md transition-colors hover:bg-gray-100 flex items-center justify-center gap-2" onClick={onclick}>
+        <button className="w-full h-10 border border-gray-300 rounded-md transition-colors hover:bg-orange-100 flex items-center justify-center gap-2" onClick={onclick}>
             {Icon? <Icon/> : <></>}
             <span className={`${expanded? "" : "hidden"}`}>{children}</span>
         </button>
@@ -126,7 +126,7 @@ export function SideMenu({icon: Icon, label}: SideMenuProps) {
 
     return (
         <li>
-            <button className={`flex p-2 w-full h-10 rounded-md transition-all hover:bg-gray-100 gap-2 items-center ${expanded? "justify-start" : "justify-center"}`} onClick={() => setIsOpened((curr) => !curr)}>
+            <button className={`flex p-2 w-full h-10 rounded-md transition-all hover:bg-orange-100 gap-2 items-center ${expanded? "justify-start" : "justify-center"}`} onClick={() => setIsOpened((curr) => !curr)}>
                 <Icon/>
                 <span className={`transition-all ${expanded? "" : "hidden"}`}>{label}</span>
             </button>
@@ -140,7 +140,7 @@ export function SideSwitch({icon: Icon, label, onclick}: SideSwitchProps) {
     
     return (
         <li>
-            <button className={`flex p-2 w-full h-10 rounded-md transition-all hover:bg-gray-100 gap-2 items-center ${expanded? "justify-start" : "justify-center"}`} onClick={onclick}>
+            <button className={`flex p-2 w-full h-10 rounded-md transition-all hover:bg-orange-100 gap-2 items-center ${expanded? "justify-start" : "justify-center"}`} onClick={onclick}>
                 <Icon />
                 <span className={`transition-all ${expanded? "" : "hidden"}`}>{label}</span>
             </button>

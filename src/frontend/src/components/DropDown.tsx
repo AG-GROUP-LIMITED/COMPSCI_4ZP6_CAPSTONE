@@ -61,7 +61,7 @@ export function DropDown({children}: DropDownProps) {
                         {children}
                 </div>
             )}
-            <button className="w-full h-10 border border-gray-300 rounded-md transition-colors hover:bg-gray-100 flex items-center justify-center gap-2" onClick={toggleOpen} tabIndex={0}>
+            <button className="w-full h-10 border border-orange-200 bg-orange-100 rounded-md transition-colors hover:bg-orange-200 hover:border-orange-100 flex items-center justify-center gap-2" onClick={toggleOpen} tabIndex={0}>
                 <span>Create</span>
             </button>
         </div>

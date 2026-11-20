@@ -45,6 +45,7 @@ interface GraphProps {
   projectId: number;
   projectNodes: ProjectNode[];
   projectEdges: ProjectEdge[];
+  onNodeClick: (nodeId: number) => void;
 }
 
 // TODO: replace this with GET api call
@@ -89,7 +90,7 @@ const edgeStyles: Record<EdgeType, Partial<Edge>> = {
   },
 };
 
-export default function TaskGraph({projectId, projectNodes, projectEdges}: GraphProps) {
+export default function TaskGraph({projectId, projectNodes, projectEdges, onNodeClick}: GraphProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [isLayoutLoading, setIsLayoutLoading] = useState(true);
@@ -246,24 +247,6 @@ export default function TaskGraph({projectId, projectNodes, projectEdges}: Graph
       console.error("Failed to create edge:", error);
     }
   }, [projectId, setEdges]);
-  // const onConnect = useCallback(
-  //   (connection: Connection) => {
-  //     const newEdge: Edge = {
-  //       ...connection,
-  //       id: `temp-${connection.source}-${connection.target}`,
-  //       type: 'smoothstep',
-  //       ...edgeStyles['ParentOf'],
-  //       data: {
-  //         edgeType: 'ParentOf',
-  //       },
-  //     };
-
-  //     setEdges(currentEdges => 
-  //       addEdge(newEdge, currentEdges)
-  //     );
-  //   },
-  //   [setEdges]
-  // );
 
   return (
     <div style={{ width: '100%', height: '100%'}}>
@@ -277,6 +260,7 @@ export default function TaskGraph({projectId, projectNodes, projectEdges}: Graph
               onEdgesChange={onEdgesChange}
               onNodeDragStop={onNodeDragStop}
               onConnect={onConnect}
+              onNodeClick={(_, node) => onNodeClick(Number(node.id))}
               fitView
             >
               <Background />
