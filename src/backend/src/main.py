@@ -8,7 +8,7 @@ from typing import Optional, List
 from sqlalchemy.orm import Session
 from . import models#,utils, schemas
 from .database import engine, SessionLocal
-from .routers import project
+from .routers import project, user, auth
 #User
 
 models.Base.metadata.create_all(bind=engine)    # Creates tables defined in models
@@ -16,6 +16,9 @@ models.Base.metadata.create_all(bind=engine)    # Creates tables defined in mode
 
 app = FastAPI()
 app.include_router(project.router)
+app.include_router(user.router)
+app.include_router(auth.router)
+
 
 #decorator - that bounds this function to app instance. A GET request will be sent to server, and the client will receive the return of the root() function: a message
 #A decorator will modify the decorated function. Here, I guess the app.get("/") decorator enables the root() function to be called when the app is requested at root path.
