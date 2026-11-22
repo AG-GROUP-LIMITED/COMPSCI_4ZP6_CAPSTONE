@@ -28,3 +28,10 @@
 ## Accessing Database
 
 The Python API stores created projects in `/src/react-ts-vite-app/backend/projects.db`.
+
+## Data Design
+
+The data entities are modelled [here](https://dbdiagram.io/d/6af3cfc1063ad9ee168ab20c)
+
+<img width="812" height="652" alt="Screenshot 2026-11-22 at 12 35 39 PM" src="https://github.com/user-attachments/assets/b6ceb87c-9d3a-4ec9-b27d-07072d627526" />
+
