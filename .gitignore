@@ -4,5 +4,3 @@
 **/*secrets*
 **/__pycache__/
 **/*.pyc
-**pycache**
-**fastapi_note**
