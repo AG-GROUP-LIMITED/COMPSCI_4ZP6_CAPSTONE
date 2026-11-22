@@ -31,7 +31,6 @@
     - `python llm.py` to run the POC script (terminal output only)
     - `streamlit run streamlit_app.py` to run the POC streamlit app (demo UI)
 
-7. Run `llm.py` to run the POC
 
 
 ## Design choices
