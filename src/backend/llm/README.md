@@ -1,4 +1,4 @@
-# LLM Proof-of-Concept
+# LLM Proof of Concept
 
 ## How to run locally
 
@@ -21,7 +21,9 @@
 4. Install the required python packages from `../llm/requirements.txt`
     - `pip install -r requirements.txt`
 
-5. Run `llm.py` to run the POC
+5. Run
+    - `python llm.py` to run the POC script (terminal output only)
+    - `streamlit run streamlit_app.py` to run the POC streamlit app (demo UI)
 
 
 ## Design choices
