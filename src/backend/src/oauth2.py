@@ -52,4 +52,6 @@ def get_current_user(token: str = Depends(oauth_scheme), db: Session = Depends(d
 
     payload = verify_access_token(token, credentials_exception)
     user = db.query(models.User).filter(models.User.id == payload.id).first()
+    if user == None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"user with id {payload.id} not found")
     return user
