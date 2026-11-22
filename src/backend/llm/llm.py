@@ -1,5 +1,6 @@
 from prompts.chat_input import SYSTEM_PROMPT
 from schemas.GraphChange import GraphChange
+from schemas.GraphState import GraphState
 from utils import get_graph_state, get_user_mapping
 
 import json
@@ -20,18 +21,28 @@ def main():
 
     user_mapping = get_user_mapping()
 
-    user_prompt = f"""
-AVAILABLE USERS:
-{json.dumps(user_mapping, indent=2)}
+    generate_graph_changes(med_case_2, graph_state, user_mapping)
 
-CURRENT GRAPH:
-{graph_state.model_dump_json(indent=2)}
 
-USER INPUT:
-{med_case_2}
-    """
+def generate_graph_changes(user_input: str, graph_state: GraphState, user_mapping, stream=False):
 
-    print("user_prompt =", med_case_2)
+    user_prompt = (
+      "AVAILABLE USERS:"
+      f"{json.dumps(user_mapping, indent=2)}"
+
+      "CURRENT GRAPH:"
+      f"{graph_state.model_dump_json(indent=2)}"
+
+      "USER INPUT:"
+      f"{user_input}"
+    )
+    print("user_prompt =", user_input)
+
+    options = {
+      "temperature": 0.1,
+      "presence_penalty": 0,
+      "num_ctx": 16384,  # 4096 default
+    }
 
     response = chat(
         model='qwen3.5:9b',
@@ -40,22 +51,27 @@ USER INPUT:
             {'role': 'user', 'content': user_prompt}
         ],
         think=True,
-        stream=True,
-        options={
-            "temperature": 0.1,
-            "presence_penalty": 0,
-            "num_ctx": 16384,  # 4096 default
-        },
+        stream=stream,
+        options=options,
         format=GraphChange.model_json_schema()
     )
-
     print("response = ", end="")
-    for chunk in response:
-        print(chunk.message.content or "", end="", flush=True)
+    if stream:
+      for chunk in response:
+          if chunk.message.content:
+              # yield chunk.message.content
+              print(chunk.message.content or "", end="", flush=True)
+    else:
+        print(response)
+        return GraphChange.model_validate_json(response.message.content)
 
 
 if __name__ == "__main__":
     main()
+
+
+
+
 
 
 
