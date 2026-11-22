@@ -1,4 +1,4 @@
-# LLM Proof of Concept
+# LLM Proof-of-Concept
 
 ## How to run locally
 
@@ -6,24 +6,28 @@
     - https://ollama.com/download
 
 2. Download a model of your choice
-    - Best reasoning, needs ~5.5gb install:
-        - `ollama pull qwen3.5:9b`
+    - Recommended: Best reasoning, needs ~5.5gb install:
+
+          ollama pull qwen3.5:9b
     - Moderate reasoning, needs ~2.5gb install:
-        - `ollama pull qwen3.5:4b`
 
-    - Verify with `ollama list`, you should see the downloaded model
+          ollama pull qwen3.5:4b
 
-3. Serve the model (on port 11434): `ollama serve`
+3. Verify your downloaded succeeded
+
+       ollama list
+
+4. Serve the model (on port 11434):
+
+       ollama serve
     - http://localhost:11434/ should show `Ollama is running`
     - http://localhost:11434/api/tags should show your model
-
-
-4. Install the required python packages from `../llm/requirements.txt`
-    - `pip install -r requirements.txt`
 
 5. Run
     - `python llm.py` to run the POC script (terminal output only)
     - `streamlit run streamlit_app.py` to run the POC streamlit app (demo UI)
+
+6. Run `llm.py` to run the POC
 
 
 ## Design choices
