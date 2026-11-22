@@ -1,7 +1,7 @@
 # This file defines tables, which allows sqlalchemy to create them in connected database.
 
 
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.expression import null, text
 from sqlalchemy.sql.sqltypes import TIMESTAMP
@@ -25,3 +25,4 @@ class User(Base):
     Email = Column(String, nullable = False)
     PasswordHash = Column(String, nullable = False)
     created = Column(TIMESTAMP(timezone=True), server_default = text('now()')  , nullable = False)
+    __table_args__ = (UniqueConstraint("Email", name="unique_email"),)
