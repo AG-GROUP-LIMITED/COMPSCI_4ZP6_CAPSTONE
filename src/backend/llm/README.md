@@ -23,11 +23,15 @@
     - http://localhost:11434/ should show `Ollama is running`
     - http://localhost:11434/api/tags should show your model
 
-5. Run
+5. Install the required python packages from `../llm/requirements.txt`
+
+       pip install -r requirements.txt
+
+6. Run
     - `python llm.py` to run the POC script (terminal output only)
     - `streamlit run streamlit_app.py` to run the POC streamlit app (demo UI)
 
-6. Run `llm.py` to run the POC
+7. Run `llm.py` to run the POC
 
 
 ## Design choices
