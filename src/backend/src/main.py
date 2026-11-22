@@ -21,4 +21,4 @@ app.include_router(project.router)
 #A decorator will modify the decorated function. Here, I guess the app.get("/") decorator enables the root() function to be called when the app is requested at root path.
 @app.get("/")   
 async def root():
-    return {"message": "heeeello world", "user": "AG Group"}
+    return {"YOU FOUND A SECRET PAGE!"}

@@ -7,7 +7,7 @@ from .. import models, schemas #,utils, , oauth2
 from ..database import get_db
 
 router = APIRouter(
-    prefix="/projects",
+    prefix="/api/projects",
     tags=["projects"]
 )
 
