@@ -5,3 +5,5 @@
 **package-lock.json**
 **secrets**
 **venv**
+**pycache**
+**fastapi_note**
