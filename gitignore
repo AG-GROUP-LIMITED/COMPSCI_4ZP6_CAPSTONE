@@ -1,6 +1,0 @@
-**/*.DS_Store
-**/*.env
-**/*.venv
-**/*secrets*
-**/__pycache__/
-**/*.pyc

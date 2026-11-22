@@ -1,7 +1,6 @@
-**.DS_Store**
-**.env**
-**.venv**
-**package.json**
-**package-lock.json**
-**secrets**
-**venv**
+**/*.DS_Store
+**/*.env
+**/*.venv
+**/*secrets*
+**/__pycache__/
+**/*.pyc
