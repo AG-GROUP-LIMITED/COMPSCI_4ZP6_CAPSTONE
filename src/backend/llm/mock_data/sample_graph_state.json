@@ -9,16 +9,16 @@
     {
       "node_id": 1,
       "type": "task",
-      "title": "Migrate data to Snowflake",
-      "description": "Move the existing database from MSSQL to Snowflake.",
+      "title": "Add data to the database",
+      "description": "Enable the data pipeline to load data into the Snowflake database.",
       "progress": "backlog",
       "assignee_id": 123
     },
     {
       "node_id": 2,
       "type": "task",
-      "title": "Repoint Python jobs to Snowflake",
-      "description": "Update the new job to use the migrated Snowflake database.",
+      "title": "Build the PowerBI report",
+      "description": "Create the report to visualize daily data from table X.",
       "progress": "backlog",
       "assignee_id": 123
     }
