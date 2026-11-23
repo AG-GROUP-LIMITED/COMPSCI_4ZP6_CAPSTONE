@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router";
+import graphstate1 from '../../assets/graphstate1.jpg';
 
 type Project = {
     id: number;
@@ -23,7 +24,9 @@ export function ProjectCard({project}: CardProps) {
                     {new Date(project.created).toLocaleDateString()}
                     </div>
                 </div>
-                <div className="w-full flex h-30 border border-gray-300 bg-white items-center justify-center text-gray-500">TODO: graph thumbnail</div>
+                <div className="w-full flex h-5- border border-gray-300 bg-white items-center justify-center text-gray-500 overflow-hidden">
+                    <img src={graphstate1} className="object-center"></img>
+                </div>
             </li>
         </>
     )
