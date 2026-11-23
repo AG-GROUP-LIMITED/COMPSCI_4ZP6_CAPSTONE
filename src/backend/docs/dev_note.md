@@ -6,6 +6,9 @@
 - Ensure you are connected to campus network OR mac Cisco VPN
 - Have a virutal env ready at `src/backend`
 - Install all packages from venv in src/backend/venv - talk to Oliver for requirements.txt
+- Environment Variables
+    - GRID_POSTGRES_MEMBER_PASS: @backend/src/database.py, member password to connect to postgres database server
+    - GRID_AUTH_KEY: @backend/src/oauth2.py, user login token generation secrete key
 
 ### Start Server
 - `cd` to root dir of this project *COMPSCI_4ZP6_CAPSTONE*
