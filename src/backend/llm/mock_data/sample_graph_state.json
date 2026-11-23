@@ -1,0 +1,35 @@
+{
+  "title": "My Project",
+  "description": "My awesome project for my awesome team",
+  "collaborators": [
+    "123",
+    "456"
+  ],
+  "nodes": [
+    {
+      "node_id": 1,
+      "type": "task",
+      "title": "Add data to the database",
+      "description": "Enable the data pipeline to load data into the Snowflake database.",
+      "progress": "backlog",
+      "assignee_id": 123
+    },
+    {
+      "node_id": 2,
+      "type": "task",
+      "title": "Build the PowerBI report",
+      "description": "Create the report to visualize daily data from table X.",
+      "progress": "backlog",
+      "assignee_id": 123
+    }
+  ],
+  "edges": [
+    {
+      "edge_id": 1,
+      "source_node_id": 2,
+      "target_node_id": 1,
+      "edge_type": "depends_on"
+    }
+  ],
+  "comments": []
+}
